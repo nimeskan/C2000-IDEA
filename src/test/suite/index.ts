@@ -13,7 +13,10 @@ export function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..');
 
 	return new Promise((c, e) => {
-		glob('**/register_links.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
+		// Only project.test.js runs for now. The other suites in this folder read
+		// fixtures from an external c2000-idea-test-source tree that is not
+		// available, so loading them would fail before any test executes.
+		glob('**/project.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
 			if (err) {
 				return e(err);
 			}

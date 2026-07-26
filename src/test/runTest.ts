@@ -6,7 +6,9 @@ async function main() {
 	try {
 		// The folder containing the Extension Manifest package.json
 		// Passed to `--extensionDevelopmentPath`
-		const extensionDevelopmentPath = path.resolve(__dirname, '../../');
+		// tsconfig sets rootDir to the repo root, so this file compiles to
+		// out/src/test/runTest.js -- three levels below the manifest, not two.
+		const extensionDevelopmentPath = path.resolve(__dirname, '../../../');
 
 		// The path to test runner
 		// Passed to --extensionTestsPath
