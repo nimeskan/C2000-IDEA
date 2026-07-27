@@ -168,10 +168,13 @@ function projectspecName(spec: string): string | null {
 // 304s with the flag, 6s without.
 //
 // getProjects keys off the directory name and the .cproject device id, so
-// moving the directory is all this needs to do. .project's <name> is updated
-// too, so thirteen copies of the same example do not all claim one Eclipse
-// project name; .cproject and .ccsproject keep the original name in their
-// internal ids, which nothing here reads.
+// moving the directory covers detection. .project's <name> is updated with it,
+// which also gives the build the right artifact name: .cproject sets
+// artifactName="${ProjName}", so a renamed project links to
+// <device>_led_ex1_blinky.out rather than led_ex1_blinky.out. .cproject and
+// .ccsproject keep the original name in their internal ids, which nothing reads.
+//
+// The rename does orphan CCS's registration -- see registerProject.
 function renameImportedProject(workspace: string, from: string, to: string): void {
 	if (from === to) { return; }
 	fs.renameSync(path.join(workspace, from), path.join(workspace, to));
@@ -180,6 +183,41 @@ function renameImportedProject(workspace: string, from: string, to: string): voi
 		fs.writeFileSync(dotProject, fs.readFileSync(dotProject, 'utf8')
 			.replace(`<name>${from}</name>`, `<name>${to}</name>`));
 	}
+}
+
+// Re-imports an already-in-workspace project so CCS knows it by its current
+// name. No -ccs.copyIntoWorkspace: the project is already where it belongs, and
+// importing a directory onto itself is the shape that has been seen to move
+// rather than copy.
+function registerProject(env: TestEnv, workspace: string, name: string): void {
+	runCcs(env, [
+		'-workspace', workspace,
+		'-application', 'projectImport',
+		'-ccs.location', path.join(workspace, name),
+	]);
+}
+
+// A build is only clean if CCS reports zero errors across at least one project
+// and an artifact actually exists. The project count matters: "0 out of 0
+// projects have errors" is what an unregistered project produces, and it exits
+// 0, so error-count alone would read a build of nothing as success.
+function buildSucceeded(bld: { ok: boolean; output: string }, projectDir: string): boolean {
+	if (!bld.ok) { return false; }
+	const m = bld.output.match(/(\d+) out of (\d+) projects have errors/);
+	if (!m || m[1] !== '0' || Number(m[2]) < 1) { return false; }
+	return hasArtifact(projectDir);
+}
+
+function hasArtifact(dir: string): boolean {
+	for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+		const p = path.join(dir, e.name);
+		if (e.isDirectory()) {
+			if (hasArtifact(p)) { return true; }
+		} else if (e.name.endsWith('.out')) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // Realizes the manifest into `workspace`. Copies always run; imports and builds
@@ -214,7 +252,7 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 		}
 		// All thirteen fixtures are the same example, so they all import under the
 		// same name and are renamed afterwards to keep them apart.
-		const importedAs = projectspecName(spec);
+		const importedAs = projectspecName(spec)!;
 		if (!importedAs) {
 			console.log('UNREADABLE PROJECTSPEC');
 			report.failures.push({ name: f.name, stage: 'import', detail: `no <project name> in ${f.projectspec}` });
@@ -239,25 +277,25 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 		}
 		console.log('ok');
 		report.imported.push(f.name);
+		renameImportedProject(workspace, importedAs, f.name);
 
-		// Build before renaming: -ccs.projects matches the Eclipse project name,
-		// which is still the one the projectspec declared.
-		if (!f.build) { renameImportedProject(workspace, importedAs, f.name); continue; }
+		if (!f.build) { continue; }
 		process.stdout.write(`  build  ${f.name} ... `);
+		// Re-register under the new name before building. CCS keeps its project
+		// registry in the Eclipse -data directory rather than in the workspace, so
+		// the rename above leaves a stale entry: a build by either the old or the
+		// new name then reports "0 out of 0 projects have errors" and exits 0
+		// without building anything.
+		registerProject(env, workspace, f.name);
 		// No -ccs.configuration: the CLI uses the project's active configuration.
 		const bld = runCcs(env, [
 			'-workspace', workspace,
 			'-application', 'projectBuild',
-			'-ccs.projects', importedAs,
+			'-ccs.projects', f.name,
 			'-ccs.buildType', 'full',
 			'-ccs.listProblems',
 		]);
-		// The postBuild step emits "/bin/sh: Syntax error" lines that make ignores
-		// ("Error 2 (ignored)"), so the output is not a reliable signal. Key off
-		// the exit status and CCS's own problem summary instead.
-		const clean = bld.ok && /have errors/.test(bld.output) && !/[1-9]\d* out of \d+ projects have errors/.test(bld.output);
-		renameImportedProject(workspace, importedAs, f.name);
-		if (!clean) {
+		if (!buildSucceeded(bld, path.join(workspace, f.name))) {
 			console.log('FAILED');
 			report.failures.push({ name: f.name, stage: 'build', detail: lastLines(bld.output, 15) });
 			continue;
