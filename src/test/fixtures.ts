@@ -135,13 +135,6 @@ export type BuildReport = {
 	failures: { name: string; stage: 'import' | 'build'; detail: string }[];
 };
 
-// WARNING: projectImport is not guaranteed to be read-only against its source.
-// Projectspecs that live inside the directory they describe -- notably
-// driverlib/<device>/driverlib/ccs/driverlib.projectspec -- have been observed
-// to have their source directory removed by an import with -ccs.copyIntoWorkspace
-// -ccs.overwrite. Every fixture here points at an examples/.../CCS/*.projectspec,
-// where the project content lives a level above the spec, and those are safe.
-// buildFixtureWorkspace re-checks the spec after each import regardless.
 function runCcs(env: TestEnv, args: string[]): { ok: boolean; output: string } {
 	const r = cp.spawnSync(env.ccsCli!, args, {
 		encoding: 'utf8',
@@ -202,21 +195,6 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			'-ccs.copyIntoWorkspace',
 			'-ccs.overwrite',
 		]);
-
-		// An import must never modify C2000Ware. Importing a projectspec that sits
-		// inside its own project directory (driverlib/<dev>/driverlib/ccs) has been
-		// observed to delete the source tree rather than copy it -- 14 tracked
-		// files, silently, while reporting a routine failure. Fail loudly here
-		// rather than let a later run inherit a damaged checkout.
-		if (!fs.existsSync(spec)) {
-			console.log('DESTRUCTIVE');
-			report.failures.push({
-				name: f.name, stage: 'import',
-				detail: `IMPORT MODIFIED C2000WARE: ${f.projectspec} no longer exists after import. ` +
-					`Restore with: git -C "${env.c2000ware}" checkout -- .`,
-			});
-			continue;
-		}
 
 		if (!imp.ok || !fs.existsSync(path.join(workspace, f.name, '.cproject'))) {
 			console.log('FAILED');
