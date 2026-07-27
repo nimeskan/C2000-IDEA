@@ -15,12 +15,13 @@ import { TestEnv } from './env';
 export type ImportFixture = {
 	kind: 'import';
 	projectspec: string;
-	// Passed as -ccs.device. Several projectspecs declare "Generic C28xx Device",
-	// which yields no usable GPN, so the concrete variant is named here.
-	device: string;
+	// Only set when the projectspec declares "Generic C28xx Device", which yields
+	// no usable GPN. Omitted everywhere else so the spec's own device is used and
+	// the manifest does not silently disagree with C2000Ware.
+	device?: string;
 	build: boolean;
-	// Project name, which is also the folder name getProjects reports. Unique
-	// across the manifest: CCS imports every project into one flat workspace.
+	// Project name, which is also the folder name getProjects reports. Applied via
+	// -ccs.renameTo, so it is authoritative rather than inherited from the spec.
 	name: string;
 	// Device family the extension is expected to resolve from the imported
 	// .cproject. This records current behavior, not necessarily correct behavior
@@ -36,84 +37,83 @@ export type CopyFixture = {
 
 export type Fixture = ImportFixture | CopyFixture;
 
-// One driverlib example per device folder in C2000Ware. Names were chosen to be
-// globally unique among all 2914 projectspecs, so no two imports collide.
 export const FIXTURES: Fixture[] = [
+	// The same led_ex1_blinky example from every device folder in C2000Ware,
+	// renamed on import to <device>_led_ex1_blinky. CCS imports every project
+	// into one flat workspace, so the device prefix is what keeps them distinct.
 	{
-		kind: 'import', name: 'sysctl_ex3_intosc_to_xrosc_config',
-		projectspec: 'driverlib/f280013x/examples/sysctl/CCS/sysctl_ex3_intosc_to_xrosc_config.projectspec',
-		device: 'TMS320F2800137', build: false, expectDevice: 'F280013x',
+		kind: 'import', name: 'f280013x_led_ex1_blinky',
+		projectspec: 'driverlib/f280013x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F280013x',
 	},
 	{
-		kind: 'import', name: 'empty_sysconfig_48php',
-		projectspec: 'driverlib/f280015x/examples/pinmux/CCS/empty_sysconfig_48php.projectspec',
-		device: 'TMS320F2800157', build: false, expectDevice: 'F280015x',
+		kind: 'import', name: 'f280015x_led_ex1_blinky',
+		projectspec: 'driverlib/f280015x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F280015x',
 	},
 	{
-		kind: 'import', name: 'empty_sysconfig_80qfp',
-		projectspec: 'driverlib/f28002x/examples/pinmux/CCS/empty_sysconfig_80qfp.projectspec',
-		device: 'TMS320F280025C', build: true, expectDevice: 'F28002x',
+		kind: 'import', name: 'f28002x_led_ex1_blinky',
+		projectspec: 'driverlib/f28002x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F28002x',
 	},
 	{
-		kind: 'import', name: 'fpufastrts_f32',
-		projectspec: 'driverlib/f28003x/examples/fpufastrts/CCS/fpufastrts_f32.projectspec',
-		device: 'TMS320F280039C', build: false, expectDevice: 'F28003x',
+		kind: 'import', name: 'f28003x_led_ex1_blinky',
+		projectspec: 'driverlib/f28003x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: true, expectDevice: 'F28003x',
 	},
 	{
-		kind: 'import', name: 'sci_ex4_echoback',
-		projectspec: 'driverlib/f28004x/examples/sci/CCS/sci_ex4_echoback.projectspec',
-		device: 'TMS320F280049C', build: false, expectDevice: 'F28004x',
+		kind: 'import', name: 'f28004x_led_ex1_blinky',
+		projectspec: 'driverlib/f28004x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F28004x',
 	},
 	{
-		// f2807x and f2837xs have no globally unique example name, so these two
-		// rely on -ccs.renameTo. Do NOT point these at driverlib/<dev>/driverlib/ccs
-		// -- see the warning on runCcs about projectspecs that sit inside their own
-		// project directory.
 		kind: 'import', name: 'f2807x_led_ex1_blinky',
 		projectspec: 'driverlib/f2807x/examples/cpu1/led/CCS/led_ex1_blinky.projectspec',
-		device: 'TMS320F28075', build: false, expectDevice: 'F2807x',
+		build: false, expectDevice: 'F2807x',
 	},
 	{
-		kind: 'import', name: 'ipc_ex1_setup_cpu02',
-		projectspec: 'driverlib/f2837xd/examples/cpu1/ipc/CCS/ipc_ex1_setup_cpu02.projectspec',
-		device: 'TMS320F28377D', build: false, expectDevice: 'F2837xD',
+		kind: 'import', name: 'f2837xd_led_ex1_blinky',
+		projectspec: 'driverlib/f2837xd/examples/cpu1/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F2837xD',
 	},
 	{
 		kind: 'import', name: 'f2837xs_led_ex1_blinky',
 		projectspec: 'driverlib/f2837xs/examples/cpu1/led/CCS/led_ex1_blinky.projectspec',
-		device: 'TMS320F28377S', build: false, expectDevice: 'F2837xS',
+		build: false, expectDevice: 'F2837xS',
 	},
 	{
-		kind: 'import', name: 'can_config_c28x',
-		projectspec: 'driverlib/f2838x/examples/cm/can/CCS/can_config_c28x.projectspec',
-		device: 'TMS320F28388D', build: false, expectDevice: 'F2838x',
+		kind: 'import', name: 'f2838x_led_ex1_blinky',
+		projectspec: 'driverlib/f2838x/examples/c28x/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F2838x',
 	},
 	{
-		kind: 'import', name: 'mcpwm_ex1_basic_pwm',
-		projectspec: 'driverlib/f28e12x/examples/mcpwm/CCS/mcpwm_ex1_basic_pwm.projectspec',
-		device: 'TMS320F28E120SCS', build: false, expectDevice: 'F28E12x',
+		kind: 'import', name: 'f28e12x_led_ex1_blinky',
+		projectspec: 'driverlib/f28e12x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F28E12x',
 	},
 	{
+		// The only blinky whose projectspec says "Generic C28xx Device", so it is
+		// the only entry that needs an explicit device.
+		//
 		// Expected to resolve as F28P55x, not F28P551x. In deviceData's
-		// GPN_TO_DEVICE_REGEX_MAP, F28P55x (/f28p55\S/i) precedes and subsumes
-		// F28P551x (/f28p551\S/i) -- the trailing \S matches the '1'. F28P551x is
-		// therefore unreachable by detection. This pins current behavior; fixing
-		// the ordering should flip this expectation.
-		kind: 'import', name: 'i2c_ex8_alt_clock_stretching_controller_tx',
-		projectspec: 'driverlib/f28p551x/examples/i2c/CCS/i2c_ex8_alt_clock_stretching_controller_tx.projectspec',
-		device: 'TMS320F28P551SG5', build: false, expectDevice: 'F28P55x',
+		// GPN_TO_DEVICE_REGEX_MAP the F28P55x pattern (/f28p55\S/i) precedes and
+		// subsumes the F28P551x one (/f28p551\S/i) -- the trailing \S matches the
+		// '1' -- so F28P551x is unreachable by detection. This pins current
+		// behavior; fixing the ordering should flip this expectation.
+		kind: 'import', name: 'f28p551x_led_ex1_blinky',
+		projectspec: 'driverlib/f28p551x/examples/led/CCS/led_ex1_blinky.projectspec',
+		device: 'TMS320F28P551SG5',
+		build: false, expectDevice: 'F28P55x',
 	},
 	{
-		kind: 'import', name: 'F28P55x_RefGen',
-		// File name and project name differ here: control_dcl_refgen_f28p55x.projectspec
-		// declares <project name="F28P55x_RefGen">.
-		projectspec: 'driverlib/f28p55x/examples/controls/CCS/control_dcl_refgen_f28p55x.projectspec',
-		device: 'TMS320F28P550SJ9', build: false, expectDevice: 'F28P55x',
+		kind: 'import', name: 'f28p55x_led_ex1_blinky',
+		projectspec: 'driverlib/f28p55x/examples/led/CCS/led_ex1_blinky.projectspec',
+		build: false, expectDevice: 'F28P55x',
 	},
 	{
-		kind: 'import', name: 'epwm_ex17_diode_emulation',
-		projectspec: 'driverlib/f28p65x/examples/c28x/epwm/CCS/epwm_ex17_diode_emulation.projectspec',
-		device: 'TMS320F28P650DK9', build: true, expectDevice: 'F28P65x',
+		kind: 'import', name: 'f28p65x_led_ex1_blinky',
+		projectspec: 'driverlib/f28p65x/examples/c28x/led/CCS/led_ex1_blinky.projectspec',
+		build: true, expectDevice: 'F28P65x',
 	},
 
 	// Loose sources for projectless tests. These sit outside every imported
@@ -191,11 +191,13 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			'-workspace', workspace,
 			'-application', 'projectImport',
 			'-ccs.location', spec,
-			'-ccs.device', f.device,
-			// Always rename, even when it matches the projectspec's own name: it
-			// makes `name` authoritative for the workspace folder, which is what
-			// getProjects reports. Otherwise the folder is whatever the spec
-			// declares -- and the spec's file name is not always that name.
+			// Only overridden for specs that declare "Generic C28xx Device"; the
+			// rest carry a real part number and are left to speak for themselves.
+			...(f.device ? ['-ccs.device', f.device] : []),
+			// Every import is renamed, which is what makes the same example usable
+			// for all thirteen devices: CCS imports into one flat workspace, so the
+			// <device>_ prefix is what keeps them from colliding. It also makes
+			// `name` authoritative for the folder getProjects reports.
 			'-ccs.renameTo', f.name,
 			'-ccs.copyIntoWorkspace',
 			'-ccs.overwrite',
