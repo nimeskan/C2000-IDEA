@@ -13,9 +13,9 @@ export function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..');
 
 	return new Promise((c, e) => {
-		// Only project.test.js runs for now. The other suites in this folder read
-		// fixtures from an external c2000-idea-test-source tree that is not
-		// available, so loading them would fail before any test executes.
+		// Only project.test.js runs: the other suites read fixtures from an
+		// external c2000-idea-test-source tree that is not available, and would
+		// fail at import time.
 		glob('**/project.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
 			if (err) {
 				return e(err);

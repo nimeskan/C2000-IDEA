@@ -1,24 +1,19 @@
-// Resolves the machine-specific locations the test fixtures depend on.
-//
-// Everything comes from test-env.json at the repo root, optionally overridden
-// key-by-key by test-env.local.json (gitignored). No environment variables are
-// consulted -- not for paths, not for toggles -- and there is no '~' expansion,
-// since that would read $HOME.
-//
-// This is the only module that knows an absolute path. Every other path in the
-// test suite is expressed relative to one of the roots resolved here.
+// Resolves the machine-specific locations the fixtures need, from
+// test-env.json at the repo root, overridden key-by-key by test-env.local.json
+// (gitignored). No environment variables and no '~' expansion, which would read
+// $HOME. The only module that holds an absolute path.
 import * as fs from 'fs';
 import * as path from 'path';
 
-// env.js compiles to out/src/test/, three levels below the repo root.
+// Compiles to out/src/test/, three levels below the repo root.
 export const REPO_ROOT = path.resolve(__dirname, '../../../');
 
 const CCS_CLI_RELATIVE = process.platform === 'win32'
 	? path.join('eclipse', 'ccs-server-cli.bat')
 	: path.join('eclipse', 'ccs-server-cli.sh');
 
-// A directory only counts as a root if it contains the marker; a plausible name
-// is not enough, and a wrong path should fail here rather than inside the CLI.
+// Roots are validated by marker file, so a wrong path fails here rather than
+// inside the CLI.
 const C2000WARE_MARKER = path.join('.metadata', 'sdk.json');
 
 type RawConfig = {

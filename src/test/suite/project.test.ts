@@ -25,7 +25,7 @@ suiteSetup(() => {
 });
 
 suite('project detection', () => {
-	// allProjectInfos is module-level state that persists across tests in a run.
+	// allProjectInfos persists across tests in a run.
 	setup(() => project.clearProjects(project.extensionContext));
 
 	test('detects every imported fixture with the expected device', async function () {

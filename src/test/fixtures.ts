@@ -1,11 +1,5 @@
-// Declarative fixture manifest plus the code that realizes it into a workspace.
-//
-// Two kinds of fixture, both sourced from C2000Ware:
-//   import - a real CCS project, imported headlessly via ccs-server-cli
-//   copy   - a plain file placed outside any project, for projectless tests
-//
-// Every path here is relative to the c2000ware root resolved by env.ts, so the
-// manifest holds nothing machine-specific.
+// Fixture manifest and the code that stages it into a workspace.
+// Paths are relative to the c2000ware root from env.ts.
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -15,17 +9,14 @@ import { TestEnv } from './env';
 export type ImportFixture = {
 	kind: 'import';
 	projectspec: string;
-	// Only set when the projectspec declares "Generic C28xx Device", which yields
-	// no usable GPN. Omitted everywhere else so the spec's own device is used and
-	// the manifest does not silently disagree with C2000Ware.
+	// Set only when the projectspec declares no concrete device; otherwise the
+	// spec's own device is used.
 	device?: string;
 	build: boolean;
-	// Folder name in the workspace, which is what getProjects reports. Applied by
-	// renaming the directory after import -- see renameImportedProject.
+	// Workspace folder name, which is what getProjects reports.
 	name: string;
-	// Device family the extension is expected to resolve from the imported
-	// .cproject. This records current behavior, not necessarily correct behavior
-	// -- see the f28p551x entry.
+	// Device family the extension is expected to resolve. Records current
+	// behavior, which is not always correct behavior -- see f28p551x.
 	expectDevice: string;
 };
 
@@ -38,9 +29,7 @@ export type CopyFixture = {
 export type Fixture = ImportFixture | CopyFixture;
 
 export const FIXTURES: Fixture[] = [
-	// The same led_ex1_blinky example from every device folder in C2000Ware,
-	// renamed on import to <device>_led_ex1_blinky. CCS imports every project
-	// into one flat workspace, so the device prefix is what keeps them distinct.
+	// CCS imports into one flat workspace, so names must not collide.
 	{
 		kind: 'import', name: 'f280013x_led_ex1_blinky',
 		projectspec: 'driverlib/f280013x/examples/led/CCS/led_ex1_blinky.projectspec',
@@ -92,14 +81,9 @@ export const FIXTURES: Fixture[] = [
 		build: false, expectDevice: 'F28E12x',
 	},
 	{
-		// The only blinky whose projectspec says "Generic C28xx Device", so it is
-		// the only entry that needs an explicit device.
-		//
-		// Expected to resolve as F28P55x, not F28P551x. In deviceData's
-		// GPN_TO_DEVICE_REGEX_MAP the F28P55x pattern (/f28p55\S/i) precedes and
-		// subsumes the F28P551x one (/f28p551\S/i) -- the trailing \S matches the
-		// '1' -- so F28P551x is unreachable by detection. This pins current
-		// behavior; fixing the ordering should flip this expectation.
+		// Resolves to F28P55x, not F28P551x: in GPN_TO_DEVICE_REGEX_MAP the
+		// F28P55x pattern (/f28p55\S/i) precedes and subsumes /f28p551\S/i, so
+		// F28P551x is unreachable. Reordering the map should flip this.
 		kind: 'import', name: 'f28p551x_led_ex1_blinky',
 		projectspec: 'driverlib/f28p551x/examples/led/CCS/led_ex1_blinky.projectspec',
 		device: 'TMS320F28P551SG5',
@@ -116,9 +100,8 @@ export const FIXTURES: Fixture[] = [
 		build: true, expectDevice: 'F28P65x',
 	},
 
-	// Loose sources for projectless tests. These sit outside every imported
-	// project, so projectGetUriProjectInfo returns undefined for them and the
-	// extension falls back to the c2000-idea.project.defaultDevice setting.
+	// Outside any project, so projectGetUriProjectInfo returns undefined and the
+	// extension falls back to c2000-idea.project.defaultDevice.
 	{ kind: 'copy', from: 'driverlib/f28p65x/driverlib/epwm.c', to: 'loose_sources/epwm.c' },
 	{ kind: 'copy', from: 'driverlib/f28p65x/driverlib/epwm.h', to: 'loose_sources/epwm.h' },
 	{ kind: 'copy', from: 'driverlib/f28003x/driverlib/adc.c', to: 'loose_sources/adc.c' },
@@ -139,7 +122,7 @@ function runCcs(env: TestEnv, args: string[]): { ok: boolean; output: string } {
 	const r = cp.spawnSync(env.ccsCli!, args, {
 		encoding: 'utf8',
 		maxBuffer: 64 * 1024 * 1024,
-		// 20 minutes: a cold SysConfig + full build is minutes, not seconds.
+		// A cold SysConfig plus full build takes minutes.
 		timeout: 20 * 60 * 1000,
 	});
 	const output = `${r.stdout ?? ''}${r.stderr ?? ''}`;
@@ -150,31 +133,20 @@ function lastLines(s: string, n: number): string {
 	return s.trimEnd().split('\n').slice(-n).join('\n');
 }
 
-// The project name CCS will use on import, read from the projectspec itself so
-// the manifest does not have to repeat it.
+// Name CCS will import under, read from the spec so the manifest need not
+// repeat it.
 function projectspecName(spec: string): string | null {
 	const m = fs.readFileSync(spec, 'utf8').match(/<project\s[^>]*?name="([^"]+)"/s);
 	return m ? m[1] : null;
 }
 
-// Renames an imported project on disk, which is deliberately NOT done with
-// -ccs.renameTo.
+// Renamed here rather than with -ccs.renameTo, which costs ~300s per import:
+// it waits on ProjectStateMonitor.ensureIsLoaded while holding the workspace
+// rule the refresh job needs, so it only unblocks on timeout. Measured 304s
+// with the flag, 6s without.
 //
-// That flag costs 298 seconds per import. ProjectImportApp.renameProject calls
-// ProjectStateMonitor.ensureIsLoaded while holding the workspace scheduling
-// rule, and the workspace refresh that would satisfy it is blocked in
-// JobManager.beginRule waiting for that same rule. The two only come unstuck
-// when ensureIsLoaded times out after five minutes. Measured on one import:
-// 304s with the flag, 6s without.
-//
-// getProjects keys off the directory name and the .cproject device id, so
-// moving the directory covers detection. .project's <name> is updated with it,
-// which also gives the build the right artifact name: .cproject sets
-// artifactName="${ProjName}", so a renamed project links to
-// <device>_led_ex1_blinky.out rather than led_ex1_blinky.out. .cproject and
-// .ccsproject keep the original name in their internal ids, which nothing reads.
-//
-// The rename does orphan CCS's registration -- see registerProject.
+// .project's <name> moves too, so the build's artifactName="${ProjName}"
+// resolves to the new name. Orphans CCS's registration -- see registerProject.
 function renameImportedProject(workspace: string, from: string, to: string): void {
 	if (from === to) { return; }
 	fs.renameSync(path.join(workspace, from), path.join(workspace, to));
@@ -185,10 +157,9 @@ function renameImportedProject(workspace: string, from: string, to: string): voi
 	}
 }
 
-// Re-imports an already-in-workspace project so CCS knows it by its current
-// name. No -ccs.copyIntoWorkspace: the project is already where it belongs, and
-// importing a directory onto itself is the shape that has been seen to move
-// rather than copy.
+// Re-imports an in-workspace project so CCS knows its current name. No
+// -ccs.copyIntoWorkspace: it is already in place, and copying a directory onto
+// itself has been seen to move rather than copy.
 function registerProject(env: TestEnv, workspace: string, name: string): void {
 	runCcs(env, [
 		'-workspace', workspace,
@@ -197,10 +168,9 @@ function registerProject(env: TestEnv, workspace: string, name: string): void {
 	]);
 }
 
-// A build is only clean if CCS reports zero errors across at least one project
-// and an artifact actually exists. The project count matters: "0 out of 0
-// projects have errors" is what an unregistered project produces, and it exits
-// 0, so error-count alone would read a build of nothing as success.
+// Requires zero errors across at least one project, plus an artifact on disk.
+// An unregistered project reports "0 out of 0 projects have errors" and exits
+// 0, so the error count alone would read a build of nothing as success.
 function buildSucceeded(bld: { ok: boolean; output: string }, projectDir: string): boolean {
 	if (!bld.ok) { return false; }
 	const m = bld.output.match(/(\d+) out of (\d+) projects have errors/);
@@ -220,9 +190,7 @@ function hasArtifact(dir: string): boolean {
 	return false;
 }
 
-// Realizes the manifest into `workspace`. Copies always run; imports and builds
-// are skipped when CCS is unavailable, so a machine without it still gets the
-// projectless fixtures rather than an error.
+// Copies always run; imports and builds are skipped when CCS is unavailable.
 export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildReport {
 	const report: BuildReport = {
 		workspace, imported: [], built: [], copied: [], failures: [],
@@ -244,14 +212,11 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 		const spec = path.join(env.c2000ware, f.projectspec);
 		process.stdout.write(`  import ${f.name} ... `);
 		if (!fs.existsSync(spec)) {
-			// Printed, not skipped silently: a wrong path in the manifest otherwise
-			// looks identical to a fixture that was never listed at all.
+			// Printed, not silent: a bad path otherwise looks like an absent fixture.
 			console.log('NO SUCH PROJECTSPEC');
 			report.failures.push({ name: f.name, stage: 'import', detail: `projectspec not found: ${f.projectspec}` });
 			continue;
 		}
-		// All thirteen fixtures are the same example, so they all import under the
-		// same name and are renamed afterwards to keep them apart.
 		const importedAs = projectspecName(spec)!;
 		if (!importedAs) {
 			console.log('UNREADABLE PROJECTSPEC');
@@ -263,8 +228,6 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			'-workspace', workspace,
 			'-application', 'projectImport',
 			'-ccs.location', spec,
-			// Only overridden for specs that declare "Generic C28xx Device"; the
-			// rest carry a real part number and are left to speak for themselves.
 			...(f.device ? ['-ccs.device', f.device] : []),
 			'-ccs.copyIntoWorkspace',
 			'-ccs.overwrite',
@@ -281,13 +244,11 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 
 		if (!f.build) { continue; }
 		process.stdout.write(`  build  ${f.name} ... `);
-		// Re-register under the new name before building. CCS keeps its project
-		// registry in the Eclipse -data directory rather than in the workspace, so
-		// the rename above leaves a stale entry: a build by either the old or the
-		// new name then reports "0 out of 0 projects have errors" and exits 0
-		// without building anything.
+		// CCS keeps its registry in the Eclipse -data dir, not the workspace, so
+		// the rename left a stale entry. Without this the build finds nothing
+		// and still exits 0.
 		registerProject(env, workspace, f.name);
-		// No -ccs.configuration: the CLI uses the project's active configuration.
+		// No -ccs.configuration: the CLI uses the active one.
 		const bld = runCcs(env, [
 			'-workspace', workspace,
 			'-application', 'projectBuild',
