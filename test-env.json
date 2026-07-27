@@ -1,0 +1,8 @@
+{
+  "ccs": "/root/ti/ccs2100/ccs",
+  "c2000ware": "/home/user/c2000ware-core-sdk",
+  "workspace": {
+    "path": null,
+    "keepAfterRun": false
+  }
+}
