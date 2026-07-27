@@ -20,8 +20,8 @@ export type ImportFixture = {
 	// the manifest does not silently disagree with C2000Ware.
 	device?: string;
 	build: boolean;
-	// Project name, which is also the folder name getProjects reports. Applied via
-	// -ccs.renameTo, so it is authoritative rather than inherited from the spec.
+	// Folder name in the workspace, which is what getProjects reports. Applied by
+	// renaming the directory after import -- see renameImportedProject.
 	name: string;
 	// Device family the extension is expected to resolve from the imported
 	// .cproject. This records current behavior, not necessarily correct behavior
@@ -150,6 +150,38 @@ function lastLines(s: string, n: number): string {
 	return s.trimEnd().split('\n').slice(-n).join('\n');
 }
 
+// The project name CCS will use on import, read from the projectspec itself so
+// the manifest does not have to repeat it.
+function projectspecName(spec: string): string | null {
+	const m = fs.readFileSync(spec, 'utf8').match(/<project\s[^>]*?name="([^"]+)"/s);
+	return m ? m[1] : null;
+}
+
+// Renames an imported project on disk, which is deliberately NOT done with
+// -ccs.renameTo.
+//
+// That flag costs 298 seconds per import. ProjectImportApp.renameProject calls
+// ProjectStateMonitor.ensureIsLoaded while holding the workspace scheduling
+// rule, and the workspace refresh that would satisfy it is blocked in
+// JobManager.beginRule waiting for that same rule. The two only come unstuck
+// when ensureIsLoaded times out after five minutes. Measured on one import:
+// 304s with the flag, 6s without.
+//
+// getProjects keys off the directory name and the .cproject device id, so
+// moving the directory is all this needs to do. .project's <name> is updated
+// too, so thirteen copies of the same example do not all claim one Eclipse
+// project name; .cproject and .ccsproject keep the original name in their
+// internal ids, which nothing here reads.
+function renameImportedProject(workspace: string, from: string, to: string): void {
+	if (from === to) { return; }
+	fs.renameSync(path.join(workspace, from), path.join(workspace, to));
+	const dotProject = path.join(workspace, to, '.project');
+	if (fs.existsSync(dotProject)) {
+		fs.writeFileSync(dotProject, fs.readFileSync(dotProject, 'utf8')
+			.replace(`<name>${from}</name>`, `<name>${to}</name>`));
+	}
+}
+
 // Realizes the manifest into `workspace`. Copies always run; imports and builds
 // are skipped when CCS is unavailable, so a machine without it still gets the
 // projectless fixtures rather than an error.
@@ -180,6 +212,15 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			report.failures.push({ name: f.name, stage: 'import', detail: `projectspec not found: ${f.projectspec}` });
 			continue;
 		}
+		// All thirteen fixtures are the same example, so they all import under the
+		// same name and are renamed afterwards to keep them apart.
+		const importedAs = projectspecName(spec);
+		if (!importedAs) {
+			console.log('UNREADABLE PROJECTSPEC');
+			report.failures.push({ name: f.name, stage: 'import', detail: `no <project name> in ${f.projectspec}` });
+			continue;
+		}
+
 		const imp = runCcs(env, [
 			'-workspace', workspace,
 			'-application', 'projectImport',
@@ -187,16 +228,11 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			// Only overridden for specs that declare "Generic C28xx Device"; the
 			// rest carry a real part number and are left to speak for themselves.
 			...(f.device ? ['-ccs.device', f.device] : []),
-			// Every import is renamed, which is what makes the same example usable
-			// for all thirteen devices: CCS imports into one flat workspace, so the
-			// <device>_ prefix is what keeps them from colliding. It also makes
-			// `name` authoritative for the folder getProjects reports.
-			'-ccs.renameTo', f.name,
 			'-ccs.copyIntoWorkspace',
 			'-ccs.overwrite',
 		]);
 
-		if (!imp.ok || !fs.existsSync(path.join(workspace, f.name, '.cproject'))) {
+		if (!imp.ok || !fs.existsSync(path.join(workspace, importedAs, '.cproject'))) {
 			console.log('FAILED');
 			report.failures.push({ name: f.name, stage: 'import', detail: lastLines(imp.output, 12) });
 			continue;
@@ -204,13 +240,15 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 		console.log('ok');
 		report.imported.push(f.name);
 
-		if (!f.build) { continue; }
+		// Build before renaming: -ccs.projects matches the Eclipse project name,
+		// which is still the one the projectspec declared.
+		if (!f.build) { renameImportedProject(workspace, importedAs, f.name); continue; }
 		process.stdout.write(`  build  ${f.name} ... `);
 		// No -ccs.configuration: the CLI uses the project's active configuration.
 		const bld = runCcs(env, [
 			'-workspace', workspace,
 			'-application', 'projectBuild',
-			'-ccs.projects', f.name,
+			'-ccs.projects', importedAs,
 			'-ccs.buildType', 'full',
 			'-ccs.listProblems',
 		]);
@@ -218,6 +256,7 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 		// ("Error 2 (ignored)"), so the output is not a reliable signal. Key off
 		// the exit status and CCS's own problem summary instead.
 		const clean = bld.ok && /have errors/.test(bld.output) && !/[1-9]\d* out of \d+ projects have errors/.test(bld.output);
+		renameImportedProject(workspace, importedAs, f.name);
 		if (!clean) {
 			console.log('FAILED');
 			report.failures.push({ name: f.name, stage: 'build', detail: lastLines(bld.output, 15) });
