@@ -81,13 +81,10 @@ export const FIXTURES: Fixture[] = [
 		build: false, expectDevice: 'F28E12x',
 	},
 	{
-		// Resolves to F28P55x, not F28P551x: in GPN_TO_DEVICE_REGEX_MAP the
-		// F28P55x pattern (/f28p55\S/i) precedes and subsumes /f28p551\S/i, so
-		// F28P551x is unreachable. Reordering the map should flip this.
 		kind: 'import', name: 'f28p551x_led_ex1_blinky',
 		projectspec: 'driverlib/f28p551x/examples/led/CCS/led_ex1_blinky.projectspec',
 		device: 'TMS320F28P551SG5',
-		build: false, expectDevice: 'F28P55x',
+		build: false, expectDevice: 'F28P551x',
 	},
 	{
 		kind: 'import', name: 'f28p55x_led_ex1_blinky',
