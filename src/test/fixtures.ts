@@ -65,8 +65,12 @@ export const FIXTURES: Fixture[] = [
 		device: 'TMS320F280049C', build: false, expectDevice: 'F28004x',
 	},
 	{
-		kind: 'import', name: 'f2807x_driverlib',
-		projectspec: 'driverlib/f2807x/driverlib/ccs/driverlib.projectspec',
+		// f2807x and f2837xs have no globally unique example name, so these two
+		// rely on -ccs.renameTo. Do NOT point these at driverlib/<dev>/driverlib/ccs
+		// -- see the warning on runCcs about projectspecs that sit inside their own
+		// project directory.
+		kind: 'import', name: 'f2807x_led_ex1_blinky',
+		projectspec: 'driverlib/f2807x/examples/cpu1/led/CCS/led_ex1_blinky.projectspec',
 		device: 'TMS320F28075', build: false, expectDevice: 'F2807x',
 	},
 	{
@@ -75,8 +79,8 @@ export const FIXTURES: Fixture[] = [
 		device: 'TMS320F28377D', build: false, expectDevice: 'F2837xD',
 	},
 	{
-		kind: 'import', name: 'f2837xs_driverlib',
-		projectspec: 'driverlib/f2837xs/driverlib/ccs/driverlib.projectspec',
+		kind: 'import', name: 'f2837xs_led_ex1_blinky',
+		projectspec: 'driverlib/f2837xs/examples/cpu1/led/CCS/led_ex1_blinky.projectspec',
 		device: 'TMS320F28377S', build: false, expectDevice: 'F2837xS',
 	},
 	{
@@ -131,6 +135,13 @@ export type BuildReport = {
 	failures: { name: string; stage: 'import' | 'build'; detail: string }[];
 };
 
+// WARNING: projectImport is not guaranteed to be read-only against its source.
+// Projectspecs that live inside the directory they describe -- notably
+// driverlib/<device>/driverlib/ccs/driverlib.projectspec -- have been observed
+// to have their source directory removed by an import with -ccs.copyIntoWorkspace
+// -ccs.overwrite. Every fixture here points at an examples/.../CCS/*.projectspec,
+// where the project content lives a level above the spec, and those are safe.
+// buildFixtureWorkspace re-checks the spec after each import regardless.
 function runCcs(env: TestEnv, args: string[]): { ok: boolean; output: string } {
 	const r = cp.spawnSync(env.ccsCli!, args, {
 		encoding: 'utf8',
@@ -181,9 +192,30 @@ export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildRep
 			'-application', 'projectImport',
 			'-ccs.location', spec,
 			'-ccs.device', f.device,
+			// Always rename, even when it matches the projectspec's own name: it
+			// makes `name` authoritative for the workspace folder, which is what
+			// getProjects reports. Otherwise the folder is whatever the spec
+			// declares -- and the spec's file name is not always that name.
+			'-ccs.renameTo', f.name,
 			'-ccs.copyIntoWorkspace',
 			'-ccs.overwrite',
 		]);
+
+		// An import must never modify C2000Ware. Importing a projectspec that sits
+		// inside its own project directory (driverlib/<dev>/driverlib/ccs) has been
+		// observed to delete the source tree rather than copy it -- 14 tracked
+		// files, silently, while reporting a routine failure. Fail loudly here
+		// rather than let a later run inherit a damaged checkout.
+		if (!fs.existsSync(spec)) {
+			console.log('DESTRUCTIVE');
+			report.failures.push({
+				name: f.name, stage: 'import',
+				detail: `IMPORT MODIFIED C2000WARE: ${f.projectspec} no longer exists after import. ` +
+					`Restore with: git -C "${env.c2000ware}" checkout -- .`,
+			});
+			continue;
+		}
+
 		if (!imp.ok || !fs.existsSync(path.join(workspace, f.name, '.cproject'))) {
 			console.log('FAILED');
 			report.failures.push({ name: f.name, stage: 'import', detail: lastLines(imp.output, 12) });
