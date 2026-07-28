@@ -97,11 +97,68 @@ export const FIXTURES: Fixture[] = [
 		build: true, expectDevice: 'F28P65x',
 	},
 
-	// Outside any project, so projectGetUriProjectInfo returns undefined and the
-	// extension falls back to c2000-idea.project.defaultDevice.
-	{ kind: 'copy', from: 'driverlib/f28p65x/driverlib/epwm.c', to: 'loose_sources/epwm.c' },
-	{ kind: 'copy', from: 'driverlib/f28p65x/driverlib/epwm.h', to: 'loose_sources/epwm.h' },
-	{ kind: 'copy', from: 'driverlib/f28003x/driverlib/adc.c', to: 'loose_sources/adc.c' },
+	// Sources outside any project, for projectless behavior:
+	// projectGetUriProjectInfo returns undefined for these, so the extension
+	// falls back to c2000-idea.project.defaultDevice.
+	//
+	// driverlib_sources: the PWM driverlib header per device, which carries the
+	// MODULE_O_REGISTER offsets. f28e12x has mcpwm rather than epwm.
+	{ kind: 'copy', from: 'driverlib/f280013x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f280013x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f280015x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f280015x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28002x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28002x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28003x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28003x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28004x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28004x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f2807x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f2807x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f2837xd/driverlib/epwm.h',
+	  to: 'driverlib_sources/f2837xd_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f2837xs/driverlib/epwm.h',
+	  to: 'driverlib_sources/f2837xs_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f2838x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f2838x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28e12x/driverlib/mcpwm.h',
+	  to: 'driverlib_sources/f28e12x_mcpwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28p551x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28p551x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28p55x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28p55x_epwm.h' },
+	{ kind: 'copy', from: 'driverlib/f28p65x/driverlib/epwm.h',
+	  to: 'driverlib_sources/f28p65x_epwm.h' },
+
+	// bitfield_sources: the PWM-triggered ADC example per device, which uses
+	// the Regs.REGISTER.bit.FIELD style. Upstream paths differ by device
+	// generation, so they are spelled out rather than derived.
+	{ kind: 'copy', from: 'device_support/f280013x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f280013x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f280015x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f280015x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28002x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f28002x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28003x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f28003x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28004x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f28004x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f2807x/examples/cpu1/adc_soc_epwm/cpu01/adc_soc_epwm_cpu01.c',
+	  to: 'bitfield_sources/f2807x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f2837xd/examples/cpu1/adc_soc_epwm/cpu01/adc_soc_epwm_cpu01.c',
+	  to: 'bitfield_sources/f2837xd_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f2837xs/examples/cpu1/adc_soc_epwm/cpu01/adc_soc_epwm_cpu01.c',
+	  to: 'bitfield_sources/f2837xs_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f2838x/examples/cpu1/adc/adc_ex2_soc_epwm.c',
+	  to: 'bitfield_sources/f2838x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28e12x/examples/adc/adc_ex1_soc_mcpwm.c',
+	  to: 'bitfield_sources/f28e12x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28p551x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f28p551x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28p55x/examples/adc/adc_ex1_soc_epwm.c',
+	  to: 'bitfield_sources/f28p55x_bitfield_example.c' },
+	{ kind: 'copy', from: 'device_support/f28p65x/examples/cpu1/adc/adc_ex2_soc_epwm.c',
+	  to: 'bitfield_sources/f28p65x_bitfield_example.c' },
 ];
 
 export const IMPORT_FIXTURES = FIXTURES.filter((f): f is ImportFixture => f.kind === 'import');
