@@ -1397,6 +1397,9 @@ function getDeviceRegisterSummary(device: string, registerDatabase: RegisterData
 
 function getDeviceModuleRegisters(device: string, module: string, registerDatabase: RegisterDataBase)
 {
+	// The data files are lower case. Without this the require resolves only on
+	// case-insensitive file systems and throws on Linux.
+	device = device.toLowerCase();
 	let moduleFile = require("./../../register_data/" + registerDatabase + "/" + device + "_" + module + "_registers");
 	if (moduleFile && moduleFile[module + "Registers"])
 	{
@@ -1529,13 +1532,13 @@ export function registerSetup(context: vscode.ExtensionContext)
 
 	context.subscriptions.push(registerCompletionProvider);
 
-	let runRegisterVisionDisposable = vscode.commands.registerCommand(info.C2000_IDEA_CMD_RUN_REGISTER_VISION, (arg) => {		
-		registerDriverlibUpdateDecorations(arg);
-	});
+	// Returned, not dropped: executeCommand then resolves once the scan is done
+	// and a failure surfaces instead of becoming an unhandled rejection.
+	let runRegisterVisionDisposable = vscode.commands.registerCommand(info.C2000_IDEA_CMD_RUN_REGISTER_VISION, (arg) =>
+		registerDriverlibUpdateDecorations(arg));
 
-	let runBitfieldRegisterVisionDisposable = vscode.commands.registerCommand(info.C2000_IDEA_CMD_RUN_BITFIELD_REGISTER_VISION, (arg) => {		
-		registerBitfieldVisionUpdateDecorations(arg);
-	});
+	let runBitfieldRegisterVisionDisposable = vscode.commands.registerCommand(info.C2000_IDEA_CMD_RUN_BITFIELD_REGISTER_VISION, (arg) =>
+		registerBitfieldVisionUpdateDecorations(arg));
 
 	let runBitfieldRegisterToDriverlibRegisterMigrationDisposable = vscode.commands.registerCommand(
 		info.C2000_IDEA_CMD_RUN_BITFIELD_REGISTER_TO_DRIVERLIB_MIGRATION, () => {
