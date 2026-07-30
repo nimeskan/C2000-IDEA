@@ -159,6 +159,41 @@ export const FIXTURES: Fixture[] = [
 	  to: 'bitfield_sources/f28p55x_bitfield_example.c' },
 	{ kind: 'copy', from: 'device_support/f28p65x/examples/cpu1/adc/adc_ex2_soc_epwm.c',
 	  to: 'bitfield_sources/f28p65x_bitfield_example.c' },
+
+	// migration_sources: example sources for the migration check. Each was picked
+	// because its findings land on a control or communication peripheral that
+	// exists on both devices of its pair, so the check reports a real API change
+	// rather than a peripheral that is simply absent on the target.
+	{ kind: 'copy', from: 'driverlib/f280013x/examples/adc/adc_ex14_ppb_pwm_trip.c',
+	  to: 'migration_sources/f280013x_adc_ex14_ppb_pwm_trip.c' },
+	{ kind: 'copy', from: 'driverlib/f280013x/examples/hrpwm/hrpwm_ex4_duty_updown_sfo.c',
+	  to: 'migration_sources/f280013x_hrpwm_ex4_duty_updown_sfo.c' },
+	{ kind: 'copy', from: 'driverlib/f280013x/examples/eqep/eqep_ex3_epwm_xbar.c',
+	  to: 'migration_sources/f280013x_eqep_ex3_epwm_xbar.c' },
+	{ kind: 'copy', from: 'driverlib/f28003x/examples/adc/adc_ex15_open_shorts_detection.c',
+	  to: 'migration_sources/f28003x_adc_ex15_open_shorts_detection.c' },
+	{ kind: 'copy', from: 'driverlib/f28003x/examples/lpm/lpm_ex6_haltwake_gpio_watchdog.c',
+	  to: 'migration_sources/f28003x_lpm_ex6_haltwake_gpio_watchdog.c' },
+	{ kind: 'copy', from: 'driverlib/f2837xd/examples/cpu1/ecap/ecap_ex2_capture_pwm.c',
+	  to: 'migration_sources/f2837xd_ecap_ex2_capture_pwm.c' },
+	{ kind: 'copy', from: 'driverlib/f2838x/examples/c28x/adc/adc_ex14_ppb_pwm_trip.c',
+	  to: 'migration_sources/f2838x_adc_ex14_ppb_pwm_trip.c' },
+	{ kind: 'copy', from: 'driverlib/f2807x/examples/cpu1/sdfm/sdfm_ex1_filters.c',
+	  to: 'migration_sources/f2807x_sdfm_ex1_filters.c' },
+	{ kind: 'copy', from: 'driverlib/f2837xs/examples/cpu1/clb/clb_ex12_output_intersect.c',
+	  to: 'migration_sources/f2837xs_clb_ex12_output_intersect.c' },
+	{ kind: 'copy', from: 'driverlib/f28004x/examples/lpm/lpm_ex6_haltwake_gpio_watchdog.c',
+	  to: 'migration_sources/f28004x_lpm_ex6_haltwake_gpio_watchdog.c' },
+	{ kind: 'copy', from: 'driverlib/f28002x/examples/memcfg/memcfg_ex1_error_handling.c',
+	  to: 'migration_sources/f28002x_memcfg_ex1_error_handling.c' },
+	{ kind: 'copy', from: 'driverlib/f280015x/examples/adc/adc_ex15_open_shorts_detection.c',
+	  to: 'migration_sources/f280015x_adc_ex15_open_shorts_detection.c' },
+	{ kind: 'copy', from: 'driverlib/f28p55x/examples/adc/adc_ex14_ppb_pwm_trip.c',
+	  to: 'migration_sources/f28p55x_adc_ex14_ppb_pwm_trip.c' },
+	{ kind: 'copy', from: 'driverlib/f28p65x/examples/c28x/sdfm/sdfm_ex6_FIFO_freeze_claread.c',
+	  to: 'migration_sources/f28p65x_sdfm_ex6_FIFO_freeze_claread.c' },
+	{ kind: 'copy', from: 'driverlib/f28e12x/examples/launchxl_f28e12x/launchxl_ex1_f28e12x_demo.c',
+	  to: 'migration_sources/f28e12x_launchxl_ex1_f28e12x_demo.c' },
 ];
 
 export const IMPORT_FIXTURES = FIXTURES.filter((f): f is ImportFixture => f.kind === 'import');
