@@ -97,6 +97,31 @@ export const FIXTURES: Fixture[] = [
 		build: true, expectDevice: 'F28P65x',
 	},
 
+	// Inputs for the project migration check. Each projectspec copies the driverlib
+	// tree into device/, and building adds the CPU1_RAM output folder; the check
+	// scans both like any other source, which is what the folder-exclusion tests
+	// remove.
+	{
+		kind: 'import', name: 'f280013x_adc_ex14_ppb_pwm_trip',
+		projectspec: 'driverlib/f280013x/examples/adc/CCS/adc_ex14_ppb_pwm_trip.projectspec',
+		build: true, expectDevice: 'F280013x',
+	},
+	{
+		kind: 'import', name: 'f28p65x_sdfm_ex6_FIFO_freeze_claread',
+		projectspec: 'driverlib/f28p65x/examples/c28x/sdfm/CCS/sdfm_ex6_FIFO_freeze_claread.projectspec',
+		build: true, expectDevice: 'F28P65x',
+	},
+	{
+		kind: 'import', name: 'f2837xd_ecap_ex2_capture_pwm',
+		projectspec: 'driverlib/f2837xd/examples/cpu1/ecap/CCS/ecap_ex2_capture_pwm.projectspec',
+		build: true, expectDevice: 'F2837xD',
+	},
+	{
+		kind: 'import', name: 'f28003x_adc_ex15_open_shorts_detection',
+		projectspec: 'driverlib/f28003x/examples/adc/CCS/adc_ex15_open_shorts_detection.projectspec',
+		build: true, expectDevice: 'F28003x',
+	},
+
 	// Sources outside any project, for projectless behavior:
 	// projectGetUriProjectInfo returns undefined for these, so the extension
 	// falls back to c2000-idea.project.defaultDevice.
