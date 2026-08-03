@@ -6,17 +6,20 @@ import * as path from 'path';
 import * as migration from '../../migration';
 import * as project from '../../utilities/project';
 
-// The projectspecs copy the driverlib tree into device/ and the build produces
-// CPU1_RAM/, so a project check covers far more than the example source. Both
-// folders are what a user excludes to get back to their own code, and excluding
-// them is also what keeps this suite affordable -- a full scan of the largest
-// project takes over an hour, so each project gets exactly one and every other
-// check runs against the reduced file set.
+// The projectspecs copy the whole driverlib tree into device/driverlib -- 51 to
+// 86 sources plus their register headers, byte-identical to C2000Ware. Findings
+// there are in TI's code, not the project's, so every test excludes that folder
+// and the baseline is the project's own sources plus the generated and support
+// code around them.
+//
+// The delta test then excludes device/ and the generated CPU1_RAM/syscfg/,
+// leaving only what the example itself owns.
 //
 // excludeCodes are codes on the most lines of each project's own source, so they
-// survive the folder exclusion and still move the count.
+// survive both folder exclusions and still move the count.
 //
-// Measured totals, in case order: 3631 9116 2473 1078.
+// Floors sit near two thirds of the measured baseline so migration-data updates
+// do not fail the suite. Measured, in case order: 225 289 57 16.
 type Case = {
 	project: string;
 	source: string;
@@ -26,29 +29,28 @@ type Case = {
 	excludeCodes: string[];
 };
 
-const SDK_FOLDER = 'device';
-const BUILD_FOLDER = 'CPU1_RAM';
-const EXCLUDED_FOLDERS = [SDK_FOLDER, BUILD_FOLDER];
+const DRIVERLIB_FOLDER = 'device/driverlib';
+const SUPPORT_FOLDERS = ['device', 'CPU1_RAM/syscfg'];
 
 const CASES: Case[] = [
 	{
 		project: 'f280013x_adc_ex14_ppb_pwm_trip', source: 'F280013x', target: 'F28E12x',
-		appSource: 'adc_ex14_ppb_pwm_trip.c', floor: 2400,
+		appSource: 'adc_ex14_ppb_pwm_trip.c', floor: 150,
 		excludeCodes: ['EPWM_DC_MODULE_A', 'GPIO_setPadConfig', 'EPWM_DC_EVENT_1'],
 	},
 	{
 		project: 'f28p65x_sdfm_ex6_FIFO_freeze_claread', source: 'F28P65x', target: 'F29H85x',
-		appSource: 'sdfm_ex6_FIFO_freeze_claread.c', floor: 6000,
+		appSource: 'sdfm_ex6_FIFO_freeze_claread.c', floor: 190,
 		excludeCodes: ['SDFM_FILTER_1', 'SDFM_FILTER_2', 'SDFM_FILTER_3'],
 	},
 	{
 		project: 'f2837xd_ecap_ex2_capture_pwm', source: 'F2837xD', target: 'F28P65x',
-		appSource: 'ecap_ex2_capture_pwm.c', floor: 1600,
+		appSource: 'ecap_ex2_capture_pwm.c', floor: 38,
 		excludeCodes: ['ECAP_setEventPolarity', 'ECAP_enableCounterResetOnEvent'],
 	},
 	{
 		project: 'f28003x_adc_ex15_open_shorts_detection', source: 'F28003x', target: 'F28P551x',
-		appSource: 'adc_ex15_open_shorts_detection.c', floor: 700,
+		appSource: 'adc_ex15_open_shorts_detection.c', floor: 10,
 		excludeCodes: ['ADC_readResult', 'ADC_configOSDetectMode'],
 	},
 ];
@@ -60,7 +62,8 @@ type Found = { total: number; perFile: Map<string, number> };
 // Never call migrationRunMigrationCheckOnProject without a project name: the
 // other branch is selectProject, which opens a quick pick and never returns
 // unattended.
-async function checkProject(c: Case, folders: string[] = []): Promise<Found> {
+async function checkProject(c: Case, extraFolders: string[] = []): Promise<Found> {
+	const folders = [DRIVERLIB_FOLDER, ...extraFolders];
 	project.setMigrationCheckFolderExceptions(folders, infoFor(c.project));
 	await migration.migrationRunMigrationCheckOnProject(
 		project.extensionContext, c.project, undefined, undefined, c.source, [c.target]);
@@ -82,25 +85,25 @@ function infoFor(name: string): project.ProjectInfo {
 	return info;
 }
 
-// Both scans are reused across tests. The full one is the expensive scan of the
-// case; the reduced one drops the SDK and build folders and costs almost nothing.
-const fullScans = new Map<string, Found>();
-const reducedScans = new Map<string, Found>();
+// Both scans are reused across tests rather than recomputed per assertion.
+const baselineScans = new Map<string, Found>();
+const appOnlyScans = new Map<string, Found>();
 
-async function full(c: Case): Promise<Found> {
-	if (!fullScans.has(c.project)) { fullScans.set(c.project, await checkProject(c)); }
-	return fullScans.get(c.project)!;
+async function baseline(c: Case): Promise<Found> {
+	if (!baselineScans.has(c.project)) { baselineScans.set(c.project, await checkProject(c)); }
+	return baselineScans.get(c.project)!;
 }
 
-async function reduced(c: Case): Promise<Found> {
-	if (!reducedScans.has(c.project)) {
-		reducedScans.set(c.project, await checkProject(c, EXCLUDED_FOLDERS));
+async function appOnly(c: Case): Promise<Found> {
+	if (!appOnlyScans.has(c.project)) {
+		appOnlyScans.set(c.project, await checkProject(c, SUPPORT_FOLDERS));
 	}
-	return reducedScans.get(c.project)!;
+	return appOnlyScans.get(c.project)!;
 }
 
 function underAny(fsPath: string, folders: string[]): boolean {
-	return folders.some(f => fsPath.includes(path.sep + f + path.sep));
+	return folders.some(f =>
+		fsPath.includes(path.sep + f.split('/').join(path.sep) + path.sep));
 }
 
 function countUnder(found: Found, folders: string[]): number {
@@ -138,7 +141,7 @@ suite('migration check on project', () => {
 		test(`${c.project}: ${c.source} to ${c.target}`, async function () {
 			if (!exists(c.project)) { this.skip(); }
 
-			const found = await full(c);
+			const found = await baseline(c);
 			console.log(`PROJMIG ${c.project} total=${found.total} files=${found.perFile.size}`);
 
 			assert.ok(found.total >= c.floor,
@@ -149,19 +152,19 @@ suite('migration check on project', () => {
 				`${c.project}: nothing reported on ${c.appSource}`);
 		});
 
-		test(`${c.project}: excluding the ${SDK_FOLDER} and ${BUILD_FOLDER} folders removes exactly their findings`, async function () {
-			if (!exists(c.project, SDK_FOLDER)) { this.skip(); }
+		test(`${c.project}: excluding ${SUPPORT_FOLDERS.join(' and ')} removes exactly their findings`, async function () {
+			if (!exists(c.project, 'device')) { this.skip(); }
 
-			const before = await full(c);
-			const after = await reduced(c);
-			const excluded = countUnder(before, EXCLUDED_FOLDERS);
+			const before = await baseline(c);
+			const after = await appOnly(c);
+			const excluded = countUnder(before, SUPPORT_FOLDERS);
 
 			console.log(`PROJMIG ${c.project} folder-excluded before=${before.total} after=${after.total} removed=${excluded}`);
 
 			assert.ok(excluded > 0,
-				`${c.project}: baseline reported nothing under ${EXCLUDED_FOLDERS.join(' or ')}, so the exclusion proves nothing`);
+				`${c.project}: baseline reported nothing under ${SUPPORT_FOLDERS.join(' or ')}, so the exclusion proves nothing`);
 			for (const fsPath of after.perFile.keys()) {
-				assert.ok(!underAny(fsPath, EXCLUDED_FOLDERS),
+				assert.ok(!underAny(fsPath, SUPPORT_FOLDERS),
 					`${c.project}: ${fsPath} is under an excluded folder`);
 			}
 			assert.strictEqual(after.total, before.total - excluded,
@@ -171,10 +174,10 @@ suite('migration check on project', () => {
 		test(`${c.project}: excluding codes drops findings`, async function () {
 			if (!exists(c.project)) { this.skip(); }
 
-			const before = await reduced(c);
+			const before = await appOnly(c);
 			const info = infoFor(c.project);
 			for (const code of c.excludeCodes) { project.addMigrationCheckException(code, info); }
-			const after = await checkProject(c, EXCLUDED_FOLDERS);
+			const after = await checkProject(c, SUPPORT_FOLDERS);
 
 			console.log(`PROJMIG ${c.project} codes-excluded before=${before.total} after=${after.total} codes=${c.excludeCodes.join(',')}`);
 
@@ -187,9 +190,9 @@ suite('migration check on project', () => {
 		const c = CASES[0];
 		if (!exists(c.project, c.appSource)) { this.skip(); }
 
-		const before = await reduced(c);
+		const before = await appOnly(c);
 		const held = before.perFile.get(path.join(workspaceRoot, c.project, c.appSource)) ?? 0;
-		const after = await checkProject(c, [...EXCLUDED_FOLDERS, c.appSource]);
+		const after = await checkProject(c, [...SUPPORT_FOLDERS, c.appSource]);
 
 		console.log(`PROJMIG single-file-excluded before=${before.total} after=${after.total} held=${held}`);
 
@@ -203,10 +206,10 @@ suite('migration check on project', () => {
 		const c = CASES[0];
 		if (!exists(c.project)) { this.skip(); }
 
-		const overridden = await reduced(c);
+		const overridden = await appOnly(c);
 
 		const info = infoFor(c.project);
-		project.setMigrationCheckFolderExceptions(EXCLUDED_FOLDERS, info);
+		project.setMigrationCheckFolderExceptions([DRIVERLIB_FOLDER, ...SUPPORT_FOLDERS], info);
 		project.updateProjectMigrationDevices(info, [c.target]);
 		await migration.migrationRunMigrationCheckOnProject(project.extensionContext, c.project);
 		const fromState = collect();
@@ -220,19 +223,19 @@ suite('migration check on project', () => {
 		const c = CASES[0];
 		if (!exists(c.project)) { this.skip(); }
 
-		const baseline = await reduced(c);
+		const uncancelled = await appOnly(c);
 
 		const source = new vscode.CancellationTokenSource();
 		source.cancel();
-		project.setMigrationCheckFolderExceptions(EXCLUDED_FOLDERS, infoFor(c.project));
+		project.setMigrationCheckFolderExceptions([DRIVERLIB_FOLDER, ...SUPPORT_FOLDERS], infoFor(c.project));
 		await migration.migrationRunMigrationCheckOnProject(
 			project.extensionContext, c.project, undefined, source.token, c.source, [c.target]);
 
 		const cancelled = collect();
 		console.log(`PROJMIG cancelled total=${cancelled.total}`);
 
-		assert.ok(cancelled.total < baseline.total,
-			`cancelled run produced ${cancelled.total}, full run ${baseline.total}`);
+		assert.ok(cancelled.total < uncancelled.total,
+			`cancelled run produced ${cancelled.total}, full run ${uncancelled.total}`);
 	});
 
 	test('an unknown project name rejects', async () => {

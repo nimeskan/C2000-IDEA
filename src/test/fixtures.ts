@@ -98,9 +98,9 @@ export const FIXTURES: Fixture[] = [
 	},
 
 	// Inputs for the project migration check. Each projectspec copies the driverlib
-	// tree into device/, and building adds the CPU1_RAM output folder; the check
-	// scans both like any other source, which is what the folder-exclusion tests
-	// remove.
+	// tree into device/driverlib, and building generates SysConfig sources under
+	// CPU1_RAM/syscfg; the check scans both like any other source, which is what
+	// the folder-exclusion tests remove.
 	{
 		kind: 'import', name: 'f280013x_adc_ex14_ppb_pwm_trip',
 		projectspec: 'driverlib/f280013x/examples/adc/CCS/adc_ex14_ppb_pwm_trip.projectspec',
