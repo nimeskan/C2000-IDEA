@@ -41,8 +41,17 @@ async function main() {
 
 	let failed = false;
 	try {
+		const vscodeTestDir = path.resolve(__dirname, '../../../.vscode-test');
+		const installedBuilds = fs.existsSync(vscodeTestDir)
+			? fs.readdirSync(vscodeTestDir).filter(d => d.startsWith('vscode-'))
+			: [];
+		const vscodeExecutablePath = installedBuilds.length > 0
+			? path.join(vscodeTestDir, installedBuilds[0], 'Code.exe')
+			: undefined;
+
 		await runTests({
 			extensionDevelopmentPath, extensionTestsPath,
+			vscodeExecutablePath,
 			launchArgs: [workspace, '--disable-extensions', `--user-data-dir=${userDataDir}`],
 		});
 	} catch (err) {

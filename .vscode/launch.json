@@ -22,13 +22,16 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
+				"C:/Users/a0225962/AppData/Local/Temp/c2000-idea-ws-FauVx1",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/src/test/suite/index"
+				"--extensionTestsPath=${workspaceFolder}/out/src/test/suite/index",
+				"--disable-extensions",
+				"--user-data-dir=${workspaceFolder}/.vscode-test/debug-userdata"
 			],
 			"outFiles": [
-				"${workspaceFolder}/out/src/test/**/*.js"
+				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "npm: compile"
 		}
 	]
 }
