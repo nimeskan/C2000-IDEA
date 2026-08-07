@@ -16,7 +16,9 @@ export function run(): Promise<void> {
 		// Named explicitly: migration_diagnostics and register_links read fixtures
 		// from an external c2000-idea-test-source tree that is not available, and
 		// would fail at import time.
-		glob('**/{project,register_vision,register_coder,interrupt_coder,migration_guide,migration_device,migration_project,migration_report,migration_syscfg}.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
+		glob(
+			'**/{project,register_vision,register_coder,interrupt_coder,migration_guide,migration_device,migration_project,migration_report,migration_syscfg}.test.js', 
+			{ cwd: testsRoot }, (err: Error | null, files: string[]) => {
 			if (err) {
 				return e(err);
 			}

@@ -278,10 +278,9 @@ export function normalizeMigrationExceptionPath(entry: string): string {
 	return entry.trim().replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+|\/+$/g, "");
 }
 
-export async function getIgnoredProjectCCodeUris(projectFsPath: string, migrationCheckFolderExceptions: string[]): Promise<vscode.Uri[]> {
+export async function getIgnoredProjectCCodeUris(projectUri: vscode.Uri, migrationCheckFolderExceptions: string[]): Promise<vscode.Uri[]> {
 	const projectCCodeUrisIgnored: vscode.Uri[] = [];
 	const outputChannel = vscode.window.createOutputChannel("Ignored Files Output"); // Create output channel
-	const projectUri = vscode.Uri.file(projectFsPath);
 
 	for (const exception of migrationCheckFolderExceptions) {
 		const normalized = normalizeMigrationExceptionPath(exception);

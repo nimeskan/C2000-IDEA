@@ -567,10 +567,8 @@ export async function migrationRunMigrationCheckOnProject(context: vscode.Extens
 		var currentDevice = sourceDeviceOverride ?? projectInfo.migrationState.currentDevice;
 		var migrationDevices = migrationDevicesOverride ?? projectInfo.migrationState.migrationDevices;
         var projectUri = projectInfo.uri;
-        const projectFsPath = projectUri.fsPath || projectUri.path;
-		var projectFsPathUri = vscode.Uri.file(projectFsPath);
-		var projectCCodeUris = await utils.getFileTypesInFolder(projectFsPathUri, [".c", ".h"]);
-		var projectCCodeUrisIgnored = await utils.getIgnoredProjectCCodeUris(projectFsPath, projectInfo.migrationState.migrationCheckFolderExceptions || []);
+		var projectCCodeUris = await utils.getFileTypesInFolder(projectUri, [".c", ".h"]);
+		var projectCCodeUrisIgnored = await utils.getIgnoredProjectCCodeUris(projectUri, projectInfo.migrationState.migrationCheckFolderExceptions || []);
 
 		migrationCodeActions = [];
 		migrationCodeLenses = [];

@@ -304,11 +304,17 @@ function hasArtifact(dir: string): boolean {
 	return false;
 }
 
-// Copies always run; imports and builds are skipped when CCS is unavailable.
+// Copies always run; imports and builds are skipped when CCS is unavailable or
+// when alreadyExists is set (workspace was staged by a prior run).
 export function buildFixtureWorkspace(env: TestEnv, workspace: string): BuildReport {
 	const report: BuildReport = {
 		workspace, imported: [], built: [], copied: [], failures: [],
 	};
+
+	if (env.workspaceAlreadyExists) {
+		console.log('  skipping all fixture setup (workspace.alreadyExists = true)');
+		return report;
+	}
 
 	if (env.c2000ware) {
 		for (const f of COPY_FIXTURES) {

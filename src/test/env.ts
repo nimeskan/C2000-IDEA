@@ -19,7 +19,7 @@ const C2000WARE_MARKER = path.join('.metadata', 'sdk.json');
 type RawConfig = {
 	ccs?: string;
 	c2000ware?: string;
-	workspace?: { path?: string | null; keepAfterRun?: boolean };
+	workspace?: { path?: string | null; keepAfterRun?: boolean; alreadyExists?: boolean };
 };
 
 export type TestEnv = {
@@ -28,6 +28,7 @@ export type TestEnv = {
 	c2000ware: string | null;
 	workspacePath: string | null;
 	keepWorkspaceAfterRun: boolean;
+	workspaceAlreadyExists: boolean;
 	diagnostics: string[];
 };
 
@@ -80,6 +81,7 @@ export function resolveTestEnv(): TestEnv {
 		c2000ware,
 		workspacePath: cfg.workspace?.path ?? null,
 		keepWorkspaceAfterRun: cfg.workspace?.keepAfterRun ?? false,
+		workspaceAlreadyExists: cfg.workspace?.alreadyExists ?? false,
 		diagnostics,
 	};
 }
