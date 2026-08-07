@@ -3,3 +3,8 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+# Written into cwd by the ti_asm_mcp logger whenever the extension runs,
+# so `npm test` from the repo root leaves one behind.
+mcp-server.log
+# Per-machine override for test-env.json (CCS / C2000Ware locations).
+test-env.local.json

@@ -13,7 +13,12 @@ export function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..');
 
 	return new Promise((c, e) => {
-		glob('**/register_links.test.js', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
+		// Named explicitly: migration_diagnostics and register_links read fixtures
+		// from an external c2000-idea-test-source tree that is not available, and
+		// would fail at import time.
+		glob(
+			'**/{project,device_data,register_vision,register_coder,interrupt_coder,collateral_tree,migration_guide,migration_device,migration_project,migration_report,migration_syscfg}.test.js',
+			{ cwd: testsRoot }, (err: Error | null, files: string[]) => {
 			if (err) {
 				return e(err);
 			}

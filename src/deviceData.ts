@@ -111,8 +111,10 @@ export const MIGRATION_MCPWM_RESOLUTION_DEVICE_LIST = [
 
 const F29H85X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f29h85/, 'i');
 const F28E12X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28e12\S/, 'i');
-const F28P55X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28p55\S/, 'i');
-const F28P551X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28p551\S/, 'i');
+// F28P550 and F28P559 are F28P55x; F28P551, F28P552 and F28P558 are F28P551x.
+// The two sets are disjoint, so map order does not decide the result.
+const F28P55X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28p55[09]/, 'i');
+const F28P551X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28p55[128]/, 'i');
 const F28P65X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28p65\S/, 'i');
 const F28004X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28004\S[mc]{0,1}/, 'i');
 const F28002X_REGEX = new RegExp(/T{0,1}M{0,1}S{0,1}\d{0,3}f28002\S[c]{0,1}/, 'i');

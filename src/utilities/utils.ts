@@ -254,20 +254,17 @@ export async function getFileTypesInFolder(folderUri : vscode.Uri, fileExtension
 	for (let folderContentItem of folderContents)
 	{
 		var folderContentItemName = folderContentItem[0];
-		var folderContentItemPath = path.join(folderUri.path, folderContentItemName);
+		var folderContentItemUri = vscode.Uri.joinPath(folderUri, folderContentItemName);
 		if (folderContentItem[1] === vscode.FileType.File)
 		{
-			let filePath = folderContentItemPath;
-			if (fileExtensions.includes(path.extname(filePath)))
+			if (fileExtensions.includes(path.extname(folderContentItemName)))
 			{
-				let fileUri = vscode.Uri.file(filePath);
-				fileUris.push(fileUri);
+				fileUris.push(folderContentItemUri);
 			}
 		}
 		else if (folderContentItem[1] === vscode.FileType.Directory)
 		{
-			var subFolderUri = vscode.Uri.file(folderContentItemPath);
-			fileUris = fileUris.concat(await getFileTypesInFolder(subFolderUri, fileExtensions));
+			fileUris = fileUris.concat(await getFileTypesInFolder(folderContentItemUri, fileExtensions));
 		}
 	}
 
@@ -281,10 +278,9 @@ export function normalizeMigrationExceptionPath(entry: string): string {
 	return entry.trim().replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+|\/+$/g, "");
 }
 
-export async function getIgnoredProjectCCodeUris(projectFsPath: string, migrationCheckFolderExceptions: string[]): Promise<vscode.Uri[]> {
+export async function getIgnoredProjectCCodeUris(projectUri: vscode.Uri, migrationCheckFolderExceptions: string[]): Promise<vscode.Uri[]> {
 	const projectCCodeUrisIgnored: vscode.Uri[] = [];
 	const outputChannel = vscode.window.createOutputChannel("Ignored Files Output"); // Create output channel
-	const projectUri = vscode.Uri.file(projectFsPath);
 
 	for (const exception of migrationCheckFolderExceptions) {
 		const normalized = normalizeMigrationExceptionPath(exception);
@@ -324,20 +320,17 @@ export async function getFileInFoldersRecursive(folderUri : vscode.Uri, fileName
 	for (let folderContentItem of folderContents)
 	{
 		var folderContentItemName = folderContentItem[0];
-		var folderContentItemPath = path.join(fUri.path, folderContentItemName);
+		var folderContentItemUri = vscode.Uri.joinPath(fUri, folderContentItemName);
 		if (folderContentItem[1] === vscode.FileType.File)
 		{
-			let filePath = folderContentItemPath;
-			if (fileName === path.basename(filePath))
+			if (fileName === folderContentItemName)
 			{
-				let fileUri = vscode.Uri.file(filePath);
-				return fileUri;
+				return folderContentItemUri;
 			}
 		}
 		else if (folderContentItem[1] === vscode.FileType.Directory)
 		{
-			var subFolderUri = vscode.Uri.file(folderContentItemPath);
-			let fileUri = await getFileInFoldersRecursive(subFolderUri, fileName);
+			let fileUri = await getFileInFoldersRecursive(folderContentItemUri, fileName);
 			if (fileUri)
 			{
 				return fileUri;
