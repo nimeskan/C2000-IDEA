@@ -6,6 +6,33 @@ import { runTests } from '@vscode/test-electron';
 import { resolveTestEnv } from './env';
 import { buildFixtureWorkspace, createWorkspaceDir } from './fixtures';
 
+// Reuse a build already under .vscode-test instead of resolving one per run.
+// The executable name differs by platform and several versions can be cached,
+// so this takes the most recently downloaded one that actually has the binary.
+// Returning undefined lets @vscode/test-electron resolve a build itself.
+function installedVSCode(): string | undefined {
+	const dir = path.resolve(__dirname, '../../../.vscode-test');
+	if (!fs.existsSync(dir)) { return undefined; }
+
+	// macOS nests the binary inside an .app bundle whose name varies by build,
+	// so it is left to the library rather than guessed at here.
+	const executable = process.platform === 'win32' ? 'Code.exe'
+		: process.platform === 'linux' ? 'code'
+			: undefined;
+	if (!executable) { return undefined; }
+
+	const builds = fs.readdirSync(dir)
+		.filter(d => d.startsWith('vscode-'))
+		.map(d => ({ d, mtime: fs.statSync(path.join(dir, d)).mtimeMs }))
+		.sort((a, b) => b.mtime - a.mtime);
+
+	for (const { d } of builds) {
+		const exe = path.join(dir, d, executable);
+		if (fs.existsSync(exe)) { return exe; }
+	}
+	return undefined;
+}
+
 async function main() {
 	// tsconfig sets rootDir to the repo root, so this compiles to
 	// out/src/test/, three levels below package.json.
@@ -41,17 +68,9 @@ async function main() {
 
 	let failed = false;
 	try {
-		const vscodeTestDir = path.resolve(__dirname, '../../../.vscode-test');
-		const installedBuilds = fs.existsSync(vscodeTestDir)
-			? fs.readdirSync(vscodeTestDir).filter(d => d.startsWith('vscode-'))
-			: [];
-		const vscodeExecutablePath = installedBuilds.length > 0
-			? path.join(vscodeTestDir, installedBuilds[0], 'Code.exe')
-			: undefined;
-
 		await runTests({
 			extensionDevelopmentPath, extensionTestsPath,
-			vscodeExecutablePath,
+			vscodeExecutablePath: installedVSCode(),
 			launchArgs: [workspace, '--disable-extensions', `--user-data-dir=${userDataDir}`],
 		});
 	} catch (err) {
