@@ -24,12 +24,14 @@ export class CollateralTreeView {
 	}
 }
 
-interface CollateralTreeItem {
+export interface CollateralTreeItem {
     name: string;
     treeItem: vscode.TreeItem;
 }
 
-function collateralTreeViewTreeDataProvider(): vscode.TreeDataProvider<CollateralTreeItem> {
+// Exported so the tree contents can be read without a TreeView, which has no
+// API for enumerating children.
+export function collateralTreeViewTreeDataProvider(): vscode.TreeDataProvider<CollateralTreeItem> {
 	return {
         onDidChangeTreeData: collateralTreeDidChangeTreeData.event,
 		getChildren: async (element?: CollateralTreeItem): Promise<CollateralTreeItem[]> => {
