@@ -17,7 +17,7 @@ export function run(): Promise<void> {
 		// from an external c2000-idea-test-source tree that is not available, and
 		// would fail at import time.
 		glob(
-			'**/{project,device_data,register_vision,register_coder,interrupt_coder,register_report,collateral_tree,migration_guide,migration_device,migration_project,migration_report,migration_syscfg}.test.js',
+			'**/{project,device_data,path_utils,register_vision,register_coder,interrupt_coder,register_report,collateral_tree,migration_guide,migration_device,migration_project,migration_report,migration_syscfg}.test.js',
 			{ cwd: testsRoot }, (err: Error | null, files: string[]) => {
 			if (err) {
 				return e(err);
