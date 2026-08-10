@@ -75,9 +75,11 @@ suite('idea mcp tools', () => {
 		}
 	});
 
-	// The instructions hand-list the tools for the agent. A rename would leave
-	// that guidance pointing at something that no longer exists.
-	test('the server instructions and the tool list agree', async () => {
+	// The instructions hand-list the tools for the agent, and the two directions
+	// are not equally bad. Naming a tool that is not registered sends an agent
+	// after something that does not exist, so that fails. Leaving a registered
+	// tool out only hides it, so that warns and stays visible in the run.
+	test('the server instructions name only tools that exist', async () => {
 		const { tools } = await client.listTools();
 		const instructions = client.getInstructions() ?? '';
 		assert.ok(instructions.length > 0, 'the server sent no instructions');
@@ -87,8 +89,13 @@ suite('idea mcp tools', () => {
 
 		const registered = new Set(tools.map(t => t.name));
 		const stale = documented.filter(name => !registered.has(name));
+		const undocumented = [...registered].filter(name => !documented.includes(name));
 
 		console.log(`MCP documented=${documented.length} registered=${registered.size}`);
+		if (undocumented.length > 0) {
+			console.warn(`MCP WARNING: registered but absent from the server instructions, ` +
+				`so an agent reading them will not know these exist: ${undocumented.join(', ')}`);
+		}
 
 		assert.deepStrictEqual(stale, [], 'the instructions name tools that are not registered');
 	});
