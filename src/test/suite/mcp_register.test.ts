@@ -44,7 +44,7 @@ function fileList(root: string): string[] {
 
 function cleanup(): void {
 	fs.rmSync(configPath(), { force: true });
-	fs.rmSync(path.join(workspaceRoot, '.claude'), { recursive: true, force: true });
+	fs.rmSync(path.join(workspaceRoot, SKILLS_DIR), { recursive: true, force: true });
 }
 
 suite('idea mcp register command', () => {
@@ -118,6 +118,6 @@ suite('idea mcp register command', () => {
 		await registerMcp('no-such-tool');
 
 		assert.ok(!fs.existsSync(configPath()), 'a config was written for an unknown tool');
-		assert.ok(!fs.existsSync(path.join(workspaceRoot, '.claude')), 'skills were copied for an unknown tool');
+		assert.ok(!fs.existsSync(path.join(workspaceRoot, SKILLS_DIR)), 'skills were copied for an unknown tool');
 	});
 });

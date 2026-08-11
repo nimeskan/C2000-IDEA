@@ -419,7 +419,7 @@ export async function getProjects(context: vscode.ExtensionContext)
 		for (let fileInfo of fileInfos)
 		{
 			// Top Level folders
-			if (fileInfo[0] !== ".theia" && fileInfo[1] === vscode.FileType.Directory)
+			if (!fileInfo[0].startsWith(".") && fileInfo[1] === vscode.FileType.Directory)
 			{
 				await updateProjects(fileInfo[0], workspaceFolder);
 			}
