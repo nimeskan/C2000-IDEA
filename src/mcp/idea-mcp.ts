@@ -648,17 +648,37 @@ async function upsertCodexToml(filePath: string, url: string): Promise<void> {
 	);
 }
 
-export async function registerMcp() {
-	const tool = await vscode.window.showQuickPick(
-		[
-			{ label: 'Claude Code', id: 'claude-code' },
-			{ label: 'Cursor', id: 'cursor' },
-			{ label: 'GitHub Copilot (VS Code)', id: 'copilot' },
-			{ label: 'OpenAI Codex CLI', id: 'codex' },
-		],
-		{ title: 'Select your AI coding tool', placeHolder: 'Choose a tool to configure' }
-	);
-	if (!tool) { return; }
+// One list behind both the quick pick and the toolId lookup, so the two cannot
+// name different sets.
+export const REGISTER_MCP_TOOLS = [
+	{ label: 'Claude Code', id: 'claude-code' },
+	{ label: 'Cursor', id: 'cursor' },
+	{ label: 'GitHub Copilot (VS Code)', id: 'copilot' },
+	{ label: 'OpenAI Codex CLI', id: 'codex' },
+];
+
+/**
+ * Register the IDEA MCP server with an AI coding tool.
+ *
+ * @param toolId Optional tool to configure, skipping the quick pick. Omitted,
+ *               the user is prompted exactly as before.
+ */
+export async function registerMcp(toolId?: string) {
+	const tool = toolId
+		? REGISTER_MCP_TOOLS.find(candidate => candidate.id === toolId)
+		: await vscode.window.showQuickPick(
+			REGISTER_MCP_TOOLS,
+			{ title: 'Select your AI coding tool', placeHolder: 'Choose a tool to configure' }
+		);
+
+	if (!tool) {
+		// A cancelled pick is silent; a bad toolId is a caller error worth saying.
+		if (toolId) {
+			vscode.window.showErrorMessage(
+				`Unknown tool "${toolId}". Expected one of: ${REGISTER_MCP_TOOLS.map(t => t.id).join(', ')}.`);
+		}
+		return;
+	}
 
 	const workspaceFolders = vscode.workspace.workspaceFolders;
 	if (!workspaceFolders) {
@@ -901,8 +921,9 @@ export function ideaMcpInit(context: vscode.ExtensionContext) {
 		checkMcp();
 	});
 
-	const registerCmd = vscode.commands.registerCommand(IDEA_MCP_VSCODE_CONFIG + '.registerIdeaMcp', async () => {
-		await registerMcp();
+	// The argument is optional, so invoking from the palette still prompts.
+	const registerCmd = vscode.commands.registerCommand(IDEA_MCP_VSCODE_CONFIG + '.registerIdeaMcp', async (toolId?: string) => {
+		await registerMcp(toolId);
 	});
 
 	const instructionsCmd = vscode.commands.registerCommand(IDEA_MCP_VSCODE_CONFIG + '.ideaMcpInstructions', async () => {
