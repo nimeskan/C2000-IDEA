@@ -2,7 +2,7 @@
   "name": "c2000-idea",
   "displayName": "C2000 IDEA",
   "description": "C2000 Real-Time Controller IDE ASSIST",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -37,6 +37,11 @@
         "command": "c2000-idea.openWalkthrough",
         "title": "C2000: Help Walkthrough",
         "icon": "$(question)"
+      },
+      {
+        "command": "c2000-idea.setupAiAgentSupport",
+        "title": "C2000: Setup AI Agent Support",
+        "icon": "$(sparkle)"
       },
       {
         "command": "c2000-idea.openInterruptCoderWalkthrough",
@@ -546,6 +551,11 @@
         {
           "command": "c2000-idea.openWalkthrough",
           "when": "view == c2000-idea.featureTreeView && viewItem == c2000-idea.featureTreeView.openWalkthrough",
+          "group": "inline"
+        },
+        {
+          "command": "c2000-idea.setupAiAgentSupport",
+          "when": "view == c2000-idea.featureTreeView && viewItem == c2000-idea.featureTreeView.setupAiAgentSupport",
           "group": "inline"
         },
         {
