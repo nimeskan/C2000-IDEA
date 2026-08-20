@@ -80,6 +80,11 @@ export const C2000_IDEA_CMD_COLLATERAL_TREE_VIEW_REFRESH = "c2000-idea.collatera
 export const C2000_IDEA_CMD_COLLATERAL_ADDITIONAL_TREE_VIEW_REFRESH = "c2000-idea.collateralAdditionalView.refreshEntry";
 
 //
+// AI
+//
+export const C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT = "c2000-idea.setupAiAgentSupport";
+
+//
 // Walkthroughs
 //
 export const C2000_IDEA_CMD_OPEN_WALKTHROUGH = "c2000-idea.openWalkthrough";

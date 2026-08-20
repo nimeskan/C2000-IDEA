@@ -4,8 +4,7 @@ import { isRunning as isTiAsmMcpRunning } from './ti-asm-mcp';
 import { IDEA_MCP_VSCODE_CONFIG } from './idea-mcp-config';
 import { MCP_VSCODE_CONFIG } from './ti-asm-mcp-config';
 import { SKILL_VSCODE_CONFIG } from '../skills/ti-asm-skills-config';
-
-const POLL_INTERVAL_MS = 2000;
+import * as info from '../utilities/info';
 
 const IDEA_MCP_LABEL = 'IDEA MCP';
 const ASM_MCP_LABEL  = 'TI-ASM MCP';
@@ -14,7 +13,6 @@ const IDEA_MCP_ENABLE_CMD  = `${IDEA_MCP_VSCODE_CONFIG}.enableIdeaMcp`;
 const IDEA_MCP_DISABLE_CMD = `${IDEA_MCP_VSCODE_CONFIG}.disableIdeaMcp`;
 const ASM_MCP_ENABLE_CMD   = `${MCP_VSCODE_CONFIG}.enableTiAsmMcp`;
 const ASM_MCP_DISABLE_CMD  = `${MCP_VSCODE_CONFIG}.disableTiAsmMcp`;
-const TOGGLE_CMD           = `${IDEA_MCP_VSCODE_CONFIG}.mcpStatusBarToggle`;
 
 /** QuickPick row — toggle items carry a server discriminator; register items carry a cmd string. */
 interface McpServerPick extends vscode.QuickPickItem {
@@ -67,7 +65,7 @@ async function showTogglePick(): Promise<void> {
 	];
 
 	const picked = await vscode.window.showQuickPick(items, {
-		title:       'MCP Servers',
+		title:       'C2000 MCP Servers and Skills',
 		placeHolder: 'Select a server to enable or disable it',
 	});
 
@@ -83,39 +81,19 @@ async function showTogglePick(): Promise<void> {
 	}
 }
 
-/** Update the status-bar item text and tooltip from the current MCP running states. */
-function mcpStatusBarRefresh(item: vscode.StatusBarItem): void {
-	const ideaRunning = isIdeaMcpRunning();
-	const asmRunning  = isTiAsmMcpRunning();
-	item.text    = `MCP Servers: ${dot(ideaRunning)} ${IDEA_MCP_LABEL}  ${dot(asmRunning)} ${ASM_MCP_LABEL}`;
-	item.tooltip = `${IDEA_MCP_LABEL}: ${ideaRunning ? 'running' : 'stopped'}  |  ${ASM_MCP_LABEL}: ${asmRunning ? 'running' : 'stopped'}\nClick to enable or disable`;
-}
-
 /**
- * Single combined status-bar item showing both MCP server states side-by-side:
- *   MCP Servers: ○ IDEA MCP  ○ TI-ASM MCP
- * Clicking opens a QuickPick to enable or disable either server.
- * State is polled every 2 s via a pure in-memory null check (negligible cost).
+ * Registers the "Setup AI Agent Support" command backing the AI section of the feature
+ * tree view. Invoking it opens a QuickPick that enables/disables either MCP server and
+ * registers the MCP servers and skills with the user's agent tool.
+ *
+ * Server state is read on demand when the QuickPick opens, so there is nothing to poll.
  */
-export function mcpStatusBarInit(context: vscode.ExtensionContext): void {
+export function mcpAgentSetupInit(context: vscode.ExtensionContext): void {
 
-	const toggleCmd = vscode.commands.registerCommand(TOGGLE_CMD, showTogglePick);
-
-	const item = vscode.window.createStatusBarItem(
-		vscode.StatusBarAlignment.Right,
-		100,
+	const setupCmd = vscode.commands.registerCommand(
+		info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT,
+		showTogglePick,
 	);
-	item.name    = 'C2000 MCP Servers';
-	item.command = TOGGLE_CMD;
-	item.show();
 
-	mcpStatusBarRefresh(item);
-
-	const timer = setInterval(mcpStatusBarRefresh.bind(undefined, item), POLL_INTERVAL_MS);
-
-	context.subscriptions.push(
-		toggleCmd,
-		item,
-		{ dispose: clearInterval.bind(undefined, timer) },
-	);
+	context.subscriptions.push(setupCmd);
 }

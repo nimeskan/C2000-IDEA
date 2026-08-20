@@ -14,7 +14,7 @@ import * as utils from './utilities/utils';
 import { tiAsmMcpInit } from './mcp/ti-asm-mcp';
 import { ideaMcpInit } from './mcp/idea-mcp';
 import { tiAsmSkillsInit } from './skills/ti-asm-skills';
-import { mcpStatusBarInit } from './mcp/mcp-status-bar';
+import { mcpAgentSetupInit } from './mcp/mcp-agent-setup';
 
 let isTheia : boolean = false;
 
@@ -58,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	safeInit('tiAsmMcp', () => tiAsmMcpInit(context));
 	safeInit('ideaMcp', () => ideaMcpInit(context));
 	safeInit('tiAsmSkills', () => tiAsmSkillsInit(context));
-	safeInit('mcpStatusBar', () => mcpStatusBarInit(context));
+	safeInit('mcpAgentSetup', () => mcpAgentSetupInit(context));
 
 	let disposableOpenCollateral = vscode.commands.registerCommand(info.C2000_IDEA_CMD_OPEN_COLLATERAL, (args) => {
 		if (args && args.link)

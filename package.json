@@ -39,6 +39,11 @@
         "icon": "$(question)"
       },
       {
+        "command": "c2000-idea.setupAiAgentSupport",
+        "title": "C2000: Setup AI Agent Support",
+        "icon": "$(sparkle)"
+      },
+      {
         "command": "c2000-idea.openInterruptCoderWalkthrough",
         "title": "C2000: Help Interrupt Coder Walkthrough"
       },
@@ -546,6 +551,11 @@
         {
           "command": "c2000-idea.openWalkthrough",
           "when": "view == c2000-idea.featureTreeView && viewItem == c2000-idea.featureTreeView.openWalkthrough",
+          "group": "inline"
+        },
+        {
+          "command": "c2000-idea.setupAiAgentSupport",
+          "when": "view == c2000-idea.featureTreeView && viewItem == c2000-idea.featureTreeView.setupAiAgentSupport",
           "group": "inline"
         },
         {

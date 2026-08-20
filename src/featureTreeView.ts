@@ -245,6 +245,28 @@ function featureTreeInfosInit(){
                     }
                 },
             ]
+        },
+        {
+            treeItem: {
+                label: "AI",
+                iconPath: utils.getNoneIconPath(extensionContext),
+                collapsibleState: vscode.TreeItemCollapsibleState.Expanded
+            },
+            featureSubTreeInfo: [
+                {
+                    treeItem: {
+                        label: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title.replace("C2000: ", ""),
+                        iconPath: utils.getNoneIconPath(extensionContext),
+                        contextValue: info.C2000_IDEA_VIEW_FEATURE_TREE_VIEW + ".setupAiAgentSupport",
+                        // Also make the label itself clickable — the inline icon only appears on hover.
+                        command: {
+                            command: info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT,
+                            title: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title
+                        },
+                        tooltip: "Click to enable or disable the IDEA MCP and TI ASM MCP servers, and to register the MCP servers and C2000-IDEA skills with your AI agent tool."
+                    }
+                },
+            ]
         }
     ];
 }
