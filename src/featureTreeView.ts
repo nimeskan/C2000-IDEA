@@ -15,7 +15,7 @@ export class FeatureTreeView {
 	}
 }
 
-interface FeatureTreeInfo {
+export interface FeatureTreeInfo {
     treeItem : vscode.TreeItem;
     featureSubTreeInfo? : FeatureTreeInfo[];
 }
@@ -271,7 +271,7 @@ function featureTreeInfosInit(){
     ];
 }
 
-function featureTreeViewTreeDataProvider(): vscode.TreeDataProvider<FeatureTreeInfo> {
+export function featureTreeViewTreeDataProvider(): vscode.TreeDataProvider<FeatureTreeInfo> {
 	return {
 		getChildren: (element?: FeatureTreeInfo): FeatureTreeInfo[] => {
             if (!element) {
