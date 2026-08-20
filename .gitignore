@@ -8,3 +8,4 @@ node_modules
 mcp-server.log
 # Per-machine override for test-env.json (CCS / C2000Ware locations).
 test-env.local.json
+releaseTI.ps1
