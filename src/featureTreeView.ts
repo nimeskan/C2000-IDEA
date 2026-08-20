@@ -25,6 +25,28 @@ function featureTreeInfosInit(){
     featureTreeInfos = [
         {
             treeItem: {
+                label: "AI",
+                iconPath: utils.getNoneIconPath(extensionContext),
+                collapsibleState: vscode.TreeItemCollapsibleState.Expanded
+            },
+            featureSubTreeInfo: [
+                {
+                    treeItem: {
+                        label: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title.replace("C2000: ", ""),
+                        iconPath: utils.getNoneIconPath(extensionContext),
+                        contextValue: info.C2000_IDEA_VIEW_FEATURE_TREE_VIEW + ".setupAiAgentSupport",
+                        // Also make the label itself clickable — the inline icon only appears on hover.
+                        command: {
+                            command: info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT,
+                            title: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title
+                        },
+                        tooltip: "Click to enable or disable the IDEA MCP and TI ASM MCP servers, and to register the MCP servers and C2000-IDEA skills with your AI agent tool."
+                    }
+                },
+            ]
+        },
+        {
+            treeItem: {
                 label: "Getting Started with C2000 IDEA",
                 iconPath: utils.getNoneIconPath(extensionContext),
                 collapsibleState: vscode.TreeItemCollapsibleState.Expanded
@@ -242,28 +264,6 @@ function featureTreeInfosInit(){
                         iconPath: utils.getNoneIconPath(extensionContext),
                         contextValue: info.C2000_IDEA_VIEW_FEATURE_TREE_VIEW + ".interruptCoder",
                         tooltip: "Click the check mark to enable automatic interrupt service routine (ISR) code generation. Begin typing a C2000 peripheral instance or interrupt name into the editor and make a selection from the drop down to autogenerate template ISR code. Fill in the ISR function with the desired application code."
-                    }
-                },
-            ]
-        },
-        {
-            treeItem: {
-                label: "AI",
-                iconPath: utils.getNoneIconPath(extensionContext),
-                collapsibleState: vscode.TreeItemCollapsibleState.Expanded
-            },
-            featureSubTreeInfo: [
-                {
-                    treeItem: {
-                        label: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title.replace("C2000: ", ""),
-                        iconPath: utils.getNoneIconPath(extensionContext),
-                        contextValue: info.C2000_IDEA_VIEW_FEATURE_TREE_VIEW + ".setupAiAgentSupport",
-                        // Also make the label itself clickable — the inline icon only appears on hover.
-                        command: {
-                            command: info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT,
-                            title: packageJson.getPackageJSONCommand(info.C2000_IDEA_CMD_SETUP_AI_AGENT_SUPPORT).title
-                        },
-                        tooltip: "Click to enable or disable the IDEA MCP and TI ASM MCP servers, and to register the MCP servers and C2000-IDEA skills with your AI agent tool."
                     }
                 },
             ]
