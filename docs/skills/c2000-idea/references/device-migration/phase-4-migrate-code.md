@@ -177,6 +177,13 @@ target project name appears in the result. If it does not, call `get_projects(re
 once, then retry. Do not call `get_project_migration_report` until the target project is
 confirmed present.
 
+**Exclude the build output folder first:** the project-level report walks the whole project,
+including build output. Call `update_project_file_folder_exceptions` with the target project
+name, `operation: "add"`, and `paths: [<buildDirectoryLocation>]` — take
+`buildDirectoryLocation` from `getProjectDescriptors`; it is relative to the project root and
+need not exist yet. Use `"add"`, never `"set"`: `"set"` replaces the entire list and would
+discard exceptions the user configured.
+
 Call `get_project_migration_report(<target project name>, <source device>, [<target device>])`,
 passing the source and target devices from `c2000-migration.md` (matching the
 `list_migration_devices()` entries) so the report reflects the intended migration pair rather
