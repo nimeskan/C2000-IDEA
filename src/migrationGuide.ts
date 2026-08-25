@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ProxyAgent } from 'undici';
 import { migrationSDKVersionUpdate, C2000_AUTO_MIGRATION_GUIDE_LINK } from './migration';
 
 //
@@ -246,8 +247,11 @@ export async function downloadMigrationGuideHtml(
 			targetDevice.toLowerCase() +
 			"_driverlib.html";
 
-		// Fetch the HTML from the remote URL
-		const response = await fetch(url);
+		// Fetch the HTML from the remote URL. Node's native fetch ignores proxy env vars,
+		// so on hosts like CCS Theia (no VSCode fetch-patching) we wire a ProxyAgent explicitly.
+		const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+		const init = proxyUrl ? { dispatcher: new ProxyAgent(proxyUrl) } as any : undefined;
+		const response = await fetch(url, init);
 		if (!response.ok) {
 			return {
 				success: false,
@@ -270,10 +274,11 @@ export async function downloadMigrationGuideHtml(
 		};
 	} catch (error) {
 		let errorMessage = 'Unknown error';
-		if (error instanceof TypeError) {
-			errorMessage = `Network error: ${error.message}`;
-		} else if (error instanceof Error) {
-			errorMessage = error.message;
+		if (error instanceof Error) {
+			const cause = (error as any).cause;
+			const causeStr = cause ? ` (cause: ${cause.code ?? ''} ${cause.message ?? cause})`.trim() : '';
+			const prefix = error instanceof TypeError ? 'Network error: ' : '';
+			errorMessage = `${prefix}${error.message}${causeStr}`;
 		}
 		return {
 			success: false,
