@@ -25,78 +25,52 @@ Download the full driverlib diff-report HTML for this migration pair to the **ta
 project directory** once, so every sub-agent (4A, 4B, 4C) can read it from disk instead
 of making a separate network request per symbol.
 
-### 4.pre.1 — Compute URL and local path
+### 4.pre.1 — Download the guide
 
-> **Do not skip 4.pre.2 even if `Migration guide HTML:` is already recorded in `c2000-migration.md` — the file may not exist on disk in a new session.**
+> **Do not skip this even if `Migration guide HTML:` is already recorded in
+> `c2000-migration.md` — the file may not exist on disk in a new session.**
 
-Read `c2000-migration.md` to get `sourceDevice` and `targetDevice` in **lowercase**
-(e.g. `f28003x`, `f28p65x`). Compute SDK version labels based on device families using
-the same logic as the IDEA extension:
+Read `sourceDevice` and `targetDevice` from `c2000-migration.md`, then call:
 
-| Migration type | `FROM_SDK` | `TO_SDK` | Base URL version |
-|---|---|---|---|
-| F28x → F28x | `C2000Ware_26_01_00_00` | `C2000Ware_26_01_00_00` | `C2000Ware_26_01_00_00` |
-| F28x → F29x | `C2000Ware_26_01_00_00` | `F29H85X-SDK_26_00_00` | `C2000Ware_26_01_00_00` |
-
-Construct the values:
 ```
-BASE_URL  = https://dev.ti.com/tirex/content/<Base URL version>/docs/<Base URL version>_Migration_Guides/html_pages/
-FILENAME  = <FROM_SDK>_<sourceDevice>_vs_<TO_SDK>_<targetDevice>_driverlib.html
-FULL_URL  = <BASE_URL>diff_reports/<FILENAME>
-LOCAL_OUT = <targetProjectPath>/<FILENAME>
+download_migration_guide(
+  sourceDevice: <source device>,
+  targetDevice: <target device>,
+  outputPath:   <targetProjectPath>/migration-guide-<source>-to-<target>.html
+)
 ```
 
-**Example** (F28003x → F28P65x):
+`outputPath` must be **absolute** and end in `.html`; an existing file is overwritten.
+The tool resolves the SDK versions, base URL, and filename pattern internally and honors
+the host's proxy configuration — **do not construct the URL or shell out to a downloader.**
+
+### 4.pre.2 — Record in c2000-migration.md
+
+**On success:** add this line to `c2000-migration.md`:
 ```
-FILENAME  = C2000Ware_26_01_00_00_f28003x_vs_C2000Ware_26_01_00_00_f28p65x_driverlib.html
-FULL_URL  = https://dev.ti.com/tirex/content/C2000Ware_26_01_00_00/docs/C2000Ware_26_01_00_00_Migration_Guides/html_pages/diff_reports/C2000Ware_26_01_00_00_f28003x_vs_C2000Ware_26_01_00_00_f28p65x_driverlib.html
-LOCAL_OUT = <targetProjectPath>/C2000Ware_26_01_00_00_f28003x_vs_C2000Ware_26_01_00_00_f28p65x_driverlib.html
-```
-
-### 4.pre.2 — Run the download
-
-Run this PowerShell command with the computed values substituted:
-
-```powershell
-powershell -Command "
-\$url = '<FULL_URL>'
-\$out = '<LOCAL_OUT>'
-if (-not (Test-Path \$out)) {
-    Invoke-WebRequest -Uri \$url -OutFile \$out -UseDefaultCredentials -TimeoutSec 60
-    Write-Host 'Downloaded'
-} else { Write-Host 'Already cached' }"
+Migration guide HTML: <outputPath>
 ```
 
-`-UseDefaultCredentials` passes the current Windows user's credentials to TI's server
-(required when on a corporate network / VPN). `-TimeoutSec 60` aborts on a slow response.
+**On failure:** the tool returns an error describing the cause. Ask the user to download it
+through the extension instead:
 
-### 4.pre.3 — Record in c2000-migration.md
-
-**On success** (prints `Downloaded` or `Already cached`): add this line to `c2000-migration.md`:
-```
-Migration guide HTML: <LOCAL_OUT>
-```
-
-**On failure** (network error, 404, timeout): the automated download was blocked
-(common on corporate networks). Ask the user to download it manually:
-
-> "The migration guide HTML could not be downloaded automatically. Please open the
-> following URL in Chrome or Edge, save the page as:
+> "The migration guide could not be downloaded automatically (`<error text>`).
+> Please run Command Palette → `C2000: Download Any-to-Any Migration Guide`, select
+> `<source device>` → `<target device>`, and save it to:
 >
-> **URL:** `<FULL_URL>`
->
-> **Save as (exact filename and location):** `<LOCAL_OUT>`
+> `<outputPath>`
 >
 > Once saved, type **done** to continue."
 
-Wait for the user's confirmation, then verify the file exists at `<LOCAL_OUT>`.
+Wait for the user's confirmation, then verify the file exists at `<outputPath>`.
 
-- **File found:** record `Migration guide HTML: <LOCAL_OUT>` in `c2000-migration.md` and proceed.
-- **File not found or user skips:** record `Migration guide HTML: DOWNLOAD FAILED — URL: <FULL_URL>`
-  in `c2000-migration.md`. Sub-agents will fall back to fetching the URL directly.
+- **File found:** record `Migration guide HTML: <outputPath>` in `c2000-migration.md` and proceed.
+- **File not found or user skips:** record `Migration guide HTML: DOWNLOAD FAILED` in
+  `c2000-migration.md`. Phase 4A will stop and ask the orchestrator to re-run this step;
+  4B and 4C will ask the user whether to fall back to ti-asm-mcp or the local SDK header.
 
 Pass the recorded line verbatim in the `Migration guide HTML` field of every sub-agent briefing
-(4A, 4B, 4C). Sub-agents use the local file when available and fall back to the URL when not.
+(4A, 4B, 4C).
 
 ---
 
