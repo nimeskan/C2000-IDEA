@@ -67,14 +67,15 @@ etc.). **MCPWM (Multi-Channel PWM)** is a newer, deliberately **lower-cost, redu
 module purpose-built for 3-phase motor control, available on MCPWM-capable target devices:
 
 - **One MCPWM instance drives up to 6 outputs** (1A/1B, 2A/2B, 3A/3B) — versus one EPWM
-  instance driving only 2 (A/B).
+  instance driving only 2 (A/B). Narrower instances exist and expose fewer pairs; Phase 1
+  Step 6 reads each instance's actual width from the TRM.
 - All 3 output pairs in one MCPWM instance **share a single time-base counter (TBCTR)**.
   There's no independent counter per pair — phase shifting between pairs has to go through the
   counter-compare submodule instead.
 - Shadow registers for TBPRD, CMPA, etc. are **directly memory-mapped and user-visible** on
   MCPWM (e.g. `TBPRDS`, `PWMx_CMPAS`) instead of a hidden shadow/active toggle you enable via
   control bits.
-- Dead-band and trip-zone settings are **shared across all 3 pairs** in one MCPWM instance —
+- Dead-band and trip-zone settings are **shared across all pairs** in one MCPWM instance —
   you lose per-pair flexibility there in exchange for the extra outputs.
 
 ### Removed entirely (no MCPWM equivalent)
@@ -119,7 +120,7 @@ dividers combined); `EPWM_enable/disableOneShotSync` and related one-shot-sync f
 | Change | Detail |
 |---|---|
 | CMPA/CMPB | Now **separate per PWM pair**: `PWM1_CMPA`, `PWM1_CMPB`, `PWM2_CMPA`, etc. |
-| CMPC/CMPD | **Shared across all 3 pairs** (not per-pair) |
+| CMPC/CMPD | **Shared across all pairs** (not per-pair) |
 | Shadow registers | Memory-mapped (`PWMx_CMPAS`, `PWMx_CMPBS`, `CMPCS`, `CMPDS`) — no separate shadow/active mode selection, just write the register you mean |
 | SYNCIN-triggered shadow load | Removed |
 
@@ -207,7 +208,7 @@ Converting, for example 4 independent EPWM instances + `sync` submodule toward r
 means:
 
 1. **Consolidate instances.** 4 separate `EPWM` instances → 1–2 `MCPWM` instances (each covers
-   up to 3 output pairs). Check whether the synchronization behavior between the 4 original
+   up to its own pair capacity, which varies per instance — see Phase 1 Step 6). Check whether the synchronization behavior between the 4 original
    channels can be re-expressed as phase offsets within shared MCPWM pairs via counter-compare,
    since there's only one counter per MCPWM instance. *(Phases 1–2, plus the counter-compare
    pair-substitution in 3a.)*

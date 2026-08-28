@@ -44,7 +44,7 @@ Migrates dead-band configuration (rising/falling edge delay, polarity, input/out
 shadow-load settings) from each source EPWM instance onto its assigned MCPWM instance. Does not
 touch counter-compare, action-qualifier, trip-zone, or event-trigger.
 
-**Important:** Dead-band settings are **instance-wide** on MCPWM — shared across all 3 pairs
+**Important:** Dead-band settings are **instance-wide** on MCPWM — shared across all pairs
 in one MCPWM instance. If multiple source EPWM instances in the same group have different
 dead-band settings, a choice must be made about which value to apply to the shared MCPWM
 instance field.
@@ -102,7 +102,7 @@ rename).
 
 Every dead-band field is **instance-wide** on MCPWM — confirmed live, a single MCPWM instance
 exposes exactly one `mcpwmDeadband_*` field set, with no `_pwm2`/`_pwm3` variants at all. That
-means dead-band settings apply to **all 3 pairs** of that instance simultaneously; there is no
+means dead-band settings apply to **all pairs** of that instance simultaneously; there is no
 per-pair dead-band the way there is for `CMPA`/`CMPB` or action-qualifier outputs.
 
 If a confirmed group has more than one source EPWM instance, and their original dead-band

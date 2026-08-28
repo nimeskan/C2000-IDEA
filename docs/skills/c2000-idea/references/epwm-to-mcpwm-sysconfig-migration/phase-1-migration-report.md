@@ -166,50 +166,59 @@ From the values gathered in Steps 3–4, build the sync topology by hand:
 
 ### Step 6 — Determine target-device MCPWM capacity
 
-Each MCPWM instance can expose **up to** three PWM output pairs — when present, they use the
-fixed naming `1A/1B`, `2A/2B`, `3A/3B` in every MCPWM instance's action-qualifier
-configurables. However, some instances may expose only two pairs (4 channels instead of 6),
-depending on the target device and instance number. **Never guess the channel count per
-instance** — always query the device's Technical Reference Manual via ti-asm-mcp to determine
-the actual capacity.
+An MCPWM instance exposes a fixed number of PWM output pairs, and **that number varies from
+instance to instance** — one device can carry instances of different widths. Never assume a
+pair count, and never assume every instance on a device is the same width. Both the number of
+instances and each instance's width come from the target device's Technical Reference Manual
+via ti-asm-mcp.
 
-What also varies by device is how many separate MCPWM instances the target device has. To
-determine both the number of instances and the channel count per instance for the target device:
+#### Find the MCPWM base address table (required)
 
-#### Query the TRM for MCPWM base address table (required)
+Navigate by **title text, never by chapter or section number.** TRM revisions renumber
+sections freely, but heading wording is stable — a hardcoded number silently points at the
+wrong content after a revision, while a title match keeps working.
 
-1. Call `list_devices()` to confirm your target device ID (e.g., `F28E12x`).
+1. Call `list_devices()` and confirm the target device is available. If it is not, stop and
+   tell the user the capacity cannot be verified for this device.
 
-2. Call `list_trm_headings(device, limit: 2)` and scan the results for the chapter containing
-   "MCPWM" in its title.
+2. Locate the base address table:
+   - **Preferred:** `search_trm_keywords(device, "MCPWM Base Address Table")`. Each result
+     carries a `sectionId` — take the one whose heading names the base address table.
+   - **Fallback,** if search returns nothing usable: call `list_trm_headings(device, limit: 1)`
+     and pick the chapter whose *title* contains the peripheral name, then
+     `list_trm_headings(device, chapter: <that chapter>, limit: 3)` and pick the heading whose
+     *title* contains "Base Address Table". Use a depth of at least 3 — the table is normally a
+     subsection of the peripheral's "Registers" section, and a shallower listing hides it.
 
-3. Once you've identified the MCPWM chapter number (e.g., `N`), call
-   `list_trm_headings(device, chapter: N, limit: 3)` and look for the section named
-   **"[Peripheral] Registers"** or similar (e.g., "MCPWM Registers").
+3. Call `get_trm_section(device, sectionId: <the id you found>)` and read the table.
 
-4. Once you've identified the Registers section (e.g., section `N.M`), call
-   `get_trm_section(device, sectionId: "N.M")` and locate the **"Base Address Table"** within
-   that section.
+#### Read the instance list out of the table
 
-5. Extract instance information from the base address table:
-   - The table lists each MCPWM instance available on the device.
-   - The register structure name in each row indicates the channel count: `MCPWM_6CH_REGS` = 6
-     channels (3 pairs), `MCPWM_4CH_REGS` = 4 channels (2 pairs).
-   - Record both the instance count and the per-instance channel count.
+Each row is one MCPWM instance on the device. Two columns matter: the **instance name** (e.g. a
+`Pwm<N>Regs` bit-field name) and the **register structure name**, which encodes the instance's
+channel count in the form `MCPWM_<N>CH_REGS`.
 
-#### Fallback (if TRM query is not possible)
+Convert with the general rule: **pairs = channels ÷ 2**, since each pair is one A/B output.
+Apply the arithmetic to whatever `<N>` the table actually shows — do not rely on a fixed list
+of known structure names, and do not assume a variant seen on one device exists on another.
 
-If you cannot access the TRM via ti-asm-mcp, you may probe SysConfig as a secondary method:
+Instance names are **not necessarily contiguous or zero-based** — record them exactly as
+printed rather than renumbering them.
 
-- If a `.syscfg` file already targeting the target device is open (or can be opened) in the
-  workspace, call `getModuleInstances` with `moduleIds: ["/driverlib/mcpwm.js"]` (the concrete
-  MCPWM module id) to enumerate the instances the device supports. However, this does not
-  directly reveal per-instance channel counts — use the TRM query above as your primary source.
+If a row's structure name does not match the `MCPWM_<N>CH_REGS` shape, or the table cannot be
+found at all, stop and ask the user for the target device's pair capacity rather than guessing.
 
-#### Record in the report
+#### Record the slot list
 
-Once you've determined the MCPWM capacity (instance count and per-instance channel counts),
-proceed to Step 7.
+Produce a concrete slot list — one line per instance with its pair count, plus the total:
+
+```
+Pwm1Regs — 6 channels → 3 pairs
+Pwm3Regs — 2 channels → 1 pair
+Total: 2 instances, 4 pairs
+```
+
+This list is the capacity budget for sections 3 and 5 of the report. Carry it forward verbatim.
 
 ### Step 7 — Produce the report
 
@@ -230,9 +239,11 @@ requirement for sharing an MCPWM counter. Call out any instance that doesn't mat
 which field, since that instance can't join the others on one MCPWM counter regardless of its
 sync relationship.
 
-**3. Target capacity check.** State the result of Step 6 in numbers: how many MCPWM instances
-(at 3 pairs each) the source's EPWM instances would require, and whether the target device was
-confirmed (or not) to have that many available.
+**3. Target capacity check.** State the Step 6 slot list, the total pairs available, and how
+many source EPWM instances need a slot. Compare the two totals directly — do **not** estimate
+capacity as "instances × 3", since instance widths differ. If the source needs more pairs than
+the device has, say so plainly here and stop: no grouping can make it fit, and the user has to
+drop or re-scope instances before Phase 2.
 
 **4. Per-instance settings table.** One row per **source EPWM instance**:
 
@@ -254,8 +265,13 @@ confirmed (or not) to have that many available.
 **5. Proposed grouping and open flags.** This is the section that turns sections 1–4 into
 something actionable, so don't skip it or leave it implicit in the table:
 
-- Partition the consolidation candidates into groups of at most 3 (one MCPWM instance's pair
-  capacity per group), stating which EPWM instances land in which group.
+- Partition the consolidation candidates against the **Step 6 slot list**, not a fixed group
+  size. Each group is assigned to a **named target instance** and may hold at most that
+  instance's pair count. State the assignment explicitly, e.g.
+  `Group 1 → Pwm1Regs (3 pairs): myEPWM1, myEPWM2, myEPWM3` /
+  `Group 2 → Pwm3Regs (1 pair): myEPWM4`.
+- Prefer putting the largest sync-linked set on the widest instance. A group cannot be split
+  across instances later, so a bad assignment is only recoverable by redoing Phase 2.
 - For every relationship that crosses a group boundary (i.e. two EPWM instances that are
   sync-linked in the source but end up assigned to *different* MCPWM instances), flag it
   explicitly by name — that relationship can no longer ride a shared counter and would need an
@@ -282,9 +298,9 @@ Initialize it with this exact structure (fill in bracketed values from your anal
 
 ## MCPWM Capacity (from TRM)
 [List instances available on target device with their channel counts, e.g.:
-- MCPWM0: 6 channels (3 pairs)
-- MCPWM1: 6 channels (3 pairs)
-- MCPWM2: 4 channels (2 pairs)]
+- Pwm1Regs: 6 channels (3 pairs)
+- Pwm3Regs: 2 channels (1 pair)
+- Total: 2 instances, 4 pairs]
 
 ## Phase 1 — Analysis Report
 Status: COMPLETE
@@ -311,9 +327,10 @@ Status: COMPLETE
 turn or without being asked, proceed to open the target device's `.syscfg`, add or configure
 any MCPWM instance, or start writing conversion code — even though the report may make the
 next step look obvious. Ask the user to review the grouping and flagged relationships in
-section 5 specifically, since that's where a judgment call was made (how to partition
-instances into groups of ≤3) that the user may want to override — e.g. a different grouping
-that keeps a different set of instances together, or a decision about how to handle a flagged
+section 5 specifically, since that's where a judgment call was made (how to partition instances
+across the available instance slots, and which instance each group was assigned to) that the
+user may want to override — e.g. a different grouping that keeps a different set of instances
+together, a different instance assignment, or a decision about how to handle a flagged
 cross-group sync relationship.
 
 → When the user confirms the report and says to proceed, **return to the orchestrator
