@@ -49,7 +49,7 @@ Migrates trip-zone configuration (trip actions, cycle-by-cycle/one-shot sources,
 routing) from each source EPWM instance onto its assigned MCPWM instance. Does not touch
 counter-compare, action-qualifier, dead-band, or event-trigger.
 
-**Important:** Trip-zone settings are **instance-wide** on MCPWM — shared across all 3 pairs
+**Important:** Trip-zone settings are **instance-wide** on MCPWM — shared across all pairs
 in one MCPWM instance. If multiple source EPWM instances in the same group have different
 trip-zone settings, a choice must be made about which value to apply to the shared MCPWM
 instance field.

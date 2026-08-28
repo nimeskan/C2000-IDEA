@@ -40,7 +40,7 @@ Call `list_migration_devices()` from IDEA MCP immediately after collecting input
 **idea-mcp** (required):
 - `get_projects()` — detect projects, current device, configured migration devices
 - `list_migration_devices()` — supported migration device families
-- `set_project_migration_folder_exceptions()` — set folder/file exclusions for the project migration report. Called once in Phase 4 before `get_project_migration_report()` to exclude the build output folder. Paths are relative to the project root.
+- `update_project_file_folder_exceptions()` — read or modify a project's file/folder migration-exception list (excluded folders' `.c`/`.h` files are skipped by migration checks). `operation` is `add` (default), `remove`, or `set`; omit `paths` to read the current list. Paths are relative to the project root and do not need to exist yet. Called in Phase 4 before `get_project_migration_report()` to exclude the build output folder.
 - `get_project_migration_report()` — run migration analysis across the whole project in one
   call. Called **once** at the start of Phase 4 to size the work and report total scope.
 - `get_device_migration_report()` — run migration analysis on a single source file. Called

@@ -35,7 +35,7 @@ instance onto its assigned MCPWM instance. Does not touch counter-compare, actio
 dead-band, trip-zone, or event-trigger's own submodule-specific load toggles (those are covered
 in their respective sub-phases).
 
-**Important:** Global-load settings are **instance-wide** on MCPWM — shared across all 3 pairs
+**Important:** Global-load settings are **instance-wide** on MCPWM — shared across all pairs
 in one MCPWM instance. If multiple source EPWM instances in the same group have different
 global-load settings, a choice must be made about which configuration to apply to the shared
 MCPWM instance field.

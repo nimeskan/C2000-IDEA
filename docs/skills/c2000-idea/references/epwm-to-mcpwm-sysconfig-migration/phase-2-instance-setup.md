@@ -40,8 +40,9 @@ Phase 1 completion first.
 From the confirmed Phase-1 report (read from the migration log), you need:
 
 1. **The groups** — which source EPWM `moduleInstanceId`s are assigned to the same target
-   MCPWM instance (at most 3 per group, one EPWM per pair slot), and in what order the user
-   confirmed them.
+   MCPWM instance, **which named TRM instance each group was assigned** and its pair count
+   (a group never holds more EPWMs than its instance has pairs, and instance widths differ),
+   and in what order the user confirmed them.
 2. **Each group's shared time-base values** — period, clock divider, counter mode (these must
    already be identical across a group's members, or the grouping wasn't valid).
 3. **The sync chain** — which EPWM instance was the original sync root, and for every other
@@ -68,12 +69,27 @@ group (e.g. two groups → pass it twice in the array), and `maxConfigurables: 0
 need the automatic representative config, you're about to set specific fields yourself in
 Step 4.
 
-Record the returned `addedInstances[].moduleInstanceId` values **in the order returned**, and
-map them to the confirmed groups **in the same order the user confirmed the groups** (group 1
-→ first returned instance id, group 2 → second, …). `addModuleInstances` auto-assigns names
-(`myMCPWM0`, `myMCPWM1`, …) — you don't get to choose them up front. State this group →
-instance-name mapping explicitly in the Step 6 report; it's the concrete answer to "which EPWM
-instances map to which MCPWM instance."
+Record the returned `addedInstances[].moduleInstanceId` values. `addModuleInstances`
+auto-assigns these names (`myMCPWM0`, `myMCPWM1`, …) — you don't get to choose them up front,
+and they are **not** the TRM instance names from Phase 1.
+
+**Bind each group to its assigned hardware instance explicitly.** Each MCPWM module instance
+has an `mcpwm` configurable ("MCPWM Peripheral") that selects which physical MCPWM peripheral
+it drives. For each new instance, set `mcpwm` to the TRM instance its confirmed group was
+assigned in Phase 1 — the numeric suffix is consistent across the TRM instance name, the
+SysConfig choice, and the register block it resolves to (`Pwm1Regs` → `"MCPWM1"` → `PWM1_BASE`;
+`Pwm3Regs` → `"MCPWM3"` → `PWM3_BASE`). Read the available strings first with
+`getInstanceConfiguration` on that instance with `ids: ["mcpwm"]` and `includeChoices: true`,
+and use them exactly as reported rather than constructing them.
+
+**Do not map groups to instances by position.** The order `addModuleInstances` returns is not
+guaranteed to match the Phase-1 slot list, and the `mcpwm` choice list *narrows* as each
+instance claims a peripheral — so what remains available to the second instance depends on what
+the first one took. Positional binding can silently put a 3-EPWM group on a 1-pair instance,
+which will not fail until Phase 3a tries to set that group's `_pwm2`/`_pwm3` fields.
+
+State the group → TRM instance → SysConfig instance-name mapping explicitly in the Step 6
+report; it's the concrete answer to "which EPWM instances map to which MCPWM instance."
 
 ### Step 3 — Set each instance's shared time-base fields
 

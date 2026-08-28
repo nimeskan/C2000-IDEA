@@ -99,7 +99,13 @@ Step 1 gives you the pair-1 field name — for the second and third source EPWM 
 group, append `_pwm2`/`_pwm3` to that field name yourself; the tool has no way to know which
 pair a given source instance landed on.
 
-`CMPC` and `CMPD`, by contrast, are genuinely **shared across all 3 pairs** of one MCPWM
+**Only the pairs the instance actually has exist.** MCPWM instance widths vary (Phase 1 Step 6
+records each instance's pair count), so a narrower instance has no `_pwm2` or `_pwm3` fields at
+all. If a group has more members than its assigned instance has pairs, stop and report it — the
+Phase-1 grouping and the Phase-2 instance binding disagree, and writing a pair that does not
+exist is not a fix. Do not silently drop the extra instance's configuration.
+
+`CMPC` and `CMPD`, by contrast, are genuinely **shared across all pairs** of one MCPWM
 instance — there is no `_pwm2`/`_pwm3` variant for them at all. If more than one source instance
 in a group used `CMPC`/`CMPD` with different values, that is not a pair-substitution problem,
 it's a reconciliation one: surface the conflicting values to the user and ask which should be

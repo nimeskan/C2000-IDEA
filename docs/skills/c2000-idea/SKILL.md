@@ -77,8 +77,8 @@ Notes:
   target device. Run this **before** device-to-device migration when the source uses
   bitfield patterns — it reduces noise in the device migration report.
 - SysConfig ePWM → MCPWM peripheral migration ports an EPWM-based `.syscfg` project onto a
-  device's MCPWM peripheral, consolidating EPWM instances onto MCPWM instances (up to 3 PWM
-  pairs each) across confirmed phases. Field mappings come from the
+  device's MCPWM peripheral, consolidating EPWM instances onto MCPWM instances (pair capacity
+  varies per instance and is read from the target device's TRM) across confirmed phases. Field mappings come from the
   `get_syscfg_module_migration_guide` tool (`moduleToModule: "epwm_mcpwm"`); the live
   `.syscfg` edits use the **ccs-sysconfig MCP**. The supported source/target device set is
   whatever that tool validates — don't assume it. This is **distinct** from device-to-device
