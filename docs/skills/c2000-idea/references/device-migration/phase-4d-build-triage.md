@@ -15,7 +15,8 @@
 ## When Phase 4D is invoked
 
 Phase 4D is dispatched only when Phase 4C reports a **non-passing build**
-(i.e., `buildProject()` returned errors after Phase 4C's second clean build attempt).
+(i.e., Phase 4C Step 5's `buildProject()` call returned errors and recorded
+`Final clean build: FAIL`).
 
 ## Briefing fields — confirm before starting
 
