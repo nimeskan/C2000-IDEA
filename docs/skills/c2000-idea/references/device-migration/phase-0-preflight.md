@@ -63,11 +63,13 @@ result itself does not matter — this only confirms the MCP is available and re
 
 - **Success (any response)** → CCS SysConfig MCP is live.
 - **Tool not found / error** → CCS SysConfig MCP is not available. This is a **soft warning**
-  (not a hard stop): Phase 3 can still run, but the `.syscfg` migration will have to be done
-  manually in CCS. Tell the user:
-  > *"The CCS SysConfig MCP is not available. Migration can proceed, but Phase 3 (SysConfig
-  > migration) will require manual SysConfig work. To enable it, register the CCS SysConfig
-  > MCP with your agent tool."*
+  (not a hard stop). Two phases need it and both have a fallback: Phase 2 step 2.5 asks the
+  user for the source project's linker style instead of detecting it, and Phase 3's `.syscfg`
+  migration has to be done manually in CCS. Tell the user:
+  > *"The CCS SysConfig MCP is not available. Migration can proceed, but I will have to ask
+  > you for the source project's linker style in Phase 2, and Phase 3 (SysConfig migration)
+  > will require manual SysConfig work. To enable it, register the CCS SysConfig MCP with
+  > your agent tool."*
 
   **Note this warning in your session context** — do NOT write to `c2000-migration.md` here
   (the log does not exist yet; Phase 1 step 1.9 will embed it). Continue to Step 0.5.
@@ -127,5 +129,5 @@ and proceed to Phase 1.
 |---------|--------|
 | `get_projects()` fails | Hard stop — IDEA MCP required |
 | CCS Project MCP not found | Hard stop — required for all build operations |
-| CCS SysConfig MCP not found | Soft warning — Phase 3 needs manual SysConfig; note and continue |
+| CCS SysConfig MCP not found | Soft warning — Phase 2.5 asks the user for the linker style, Phase 3 needs manual SysConfig; note and continue |
 | TI ASM MCP not found | Soft warning — note in session context and continue |
