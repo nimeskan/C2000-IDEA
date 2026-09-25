@@ -41,12 +41,9 @@ Open the target project's `.syscfg` via `openFile` (ccs-sysconfig MCP) — alway
 
 Call `getModuleInstances` and check for the device-support module.
 
-**The device-support module name is `device_support`.** Look for a match using these rules:
-- The complete module name is `/driverlib/device_support.js`
-- **Instance name:** compare the instance's `name` field against `"device_support"` —
-  this comparison is **case-sensitive** (exact string match).
-
-Use the first rule that produces a match. If neither rule finds a match, the module is absent.
+`getModuleInstances` returns instances grouped by `moduleId`. The device-support module's
+`moduleId` is `/driverlib/device_support.js`. If no group carries that `moduleId`, the
+module is absent.
 
 - If it is **missing** (a source `.syscfg` that did not use it), call `addModuleInstances`
   with the module name `"device_support"` to add it. This guarantees `device.c`/`device.h`,
