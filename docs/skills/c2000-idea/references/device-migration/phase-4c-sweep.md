@@ -213,6 +213,8 @@ Final sweep: CLEAN / PARTIAL
 Issues resolved in sweep: <N>
 DEFERRED-MANUAL items: <K>
 Final clean build: PASS / FAIL   ← orchestrator reads this field to decide whether to dispatch Phase 4D
+Build errors: <`errors` array from the final buildProject result, or "none">
+Build log: <outputFilePath from the final buildProject result, or "inline">
 
 Phase 4C overall:
   Files migrated: <total>
