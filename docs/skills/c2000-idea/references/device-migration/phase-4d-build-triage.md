@@ -35,6 +35,7 @@ or invent values.
 | `activeBuildConfig` | Active build configuration name (e.g., `CPU1_FLASH`) | Phase 2 (getToolFlags) |
 | `sysConfigOutputLocation` | SysConfig-generated output folder path | Phase 3 (getProjectDescriptors) |
 | `buildErrorOutput` | `errors` array from Phase 4C's final buildProject result | Phase 4C structured result |
+| `buildLog` | Copy of Phase 4C's build log, or `inline` | Phase 4 orchestrator (Step 4.5) |
 | `migrationLogSummary` | Phase 4 progress table and deferred-errors list from c2000-migration.md | Phase 4C structured result |
 
 > **`sysConfigOutputLocation` — read-only guard:**
