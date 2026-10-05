@@ -9,7 +9,7 @@
 ## Your assignment
 
 Perform a final sweep across all migrated files to confirm zero remaining migration
-issues, then execute a clean rebuild to confirm the full project compiles with no errors.
+issues, then build the project to confirm it compiles with no errors.
 
 **Stop and ask the user** if any MCP tool call fails or returns an unexpected result.
 
@@ -154,12 +154,12 @@ symbol inventory (which would be impractical for large files).
    ```
 
 > **Scope:** Only check context windows around lines that were actively fixed. Do not
-> attempt a full-file symbol inventory — the clean build in Step 5 is the authoritative
+> attempt a full-file symbol inventory — the final build in Step 5 is the authoritative
 > final correctness check. This step catches obvious edit artifacts before the build.
 
 ---
 
-## Step 5 — Clean rebuild (required)
+## Step 5 — Final build (required)
 
 WARNING: **This step is mandatory before declaring Phase 4 complete.**
 
