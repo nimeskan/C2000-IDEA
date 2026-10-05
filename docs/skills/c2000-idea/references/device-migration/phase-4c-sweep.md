@@ -163,7 +163,9 @@ symbol inventory (which would be impractical for large files).
 
 WARNING: **This step is mandatory before declaring Phase 4 complete.**
 
-Call `buildProject` on the target project. 
+Call `buildProject` on the target project. If it returns `status: running`, call
+`waitForResult` with the `taskId` until it completes. Record PASS or FAIL only from a
+completed result.
 
 ```
 buildProject(<target project name>) 
