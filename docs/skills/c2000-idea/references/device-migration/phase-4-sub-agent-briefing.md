@@ -168,6 +168,8 @@ Briefing:
 
   Build errors from Phase 4C:
     <paste the `errors` array from the buildProject result>
+  Build log from Phase 4C:
+    <outputFilePath from the buildProject result, or "inline">
 
   c2000-migration.md current content (summary):
     <paste the Phase 4 progress table and deferred-errors list>
