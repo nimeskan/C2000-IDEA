@@ -46,8 +46,8 @@ Call `getModuleInstances` and check for the device-support module.
 module is absent.
 
 - If it is **missing** (a source `.syscfg` that did not use it), call `addModuleInstances`
-  with the module name `"device_support"` to add it. This guarantees `device.c`/`device.h`,
-  `.opt`, and `.cmd.genlibs` are generated for the target.
+  with `moduleIds: ["/driverlib/device_support.js"]` to add it. This guarantees
+  `device.c`/`device.h`, `.opt`, and `.cmd.genlibs` are generated for the target.
 - If it is **already present** (the universal template, or a source that already used it),
   no action — this case is already correct.
 
