@@ -326,7 +326,7 @@ STOP: **Do not read `phase-4d-build-triage.md` yourself. Send it to the sub-agen
 
 If Phase 4C's final `buildProject()` call returned errors, dispatch a Phase 4D sub-agent:
 
-1. Pass the Phase 4C build error output verbatim in the briefing.
+1. Pass the `errors` array from Phase 4C's `buildProject` result in the briefing.
 2. Pass the current `c2000-migration.md` contents for context.
 3. Use the standard sub-agent briefing format from
    [`phase-4-sub-agent-briefing.md`](phase-4-sub-agent-briefing.md), with:

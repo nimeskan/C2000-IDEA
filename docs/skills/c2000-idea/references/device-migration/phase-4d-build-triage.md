@@ -34,7 +34,7 @@ or invent values.
 | `c2000ware_path` | Absolute path to the C2000Ware root | Phase 1 (SDK resolution) |
 | `activeBuildConfig` | Active build configuration name (e.g., `CPU1_FLASH`) | Phase 2 (getToolFlags) |
 | `sysConfigOutputLocation` | SysConfig-generated output folder path | Phase 3 (getProjectDescriptors) |
-| `buildErrorOutput` | Full verbatim error output from Phase 4C's final buildProject call | Phase 4C structured result |
+| `buildErrorOutput` | `errors` array from Phase 4C's final buildProject result | Phase 4C structured result |
 | `migrationLogSummary` | Phase 4 progress table and deferred-errors list from c2000-migration.md | Phase 4C structured result |
 
 > **`sysConfigOutputLocation` — read-only guard:**
@@ -50,7 +50,7 @@ or invent values.
 The orchestrator provides you with:
 - Target project name
 - Source and target device names
-- The build error output from Phase 4C's final `buildProject()` call
+- The `errors` array from Phase 4C's final `buildProject()` result
 - The current `c2000-migration.md` contents (for context)
 
 ---
@@ -77,10 +77,8 @@ Call `buildProject(<target project name>)` to get the **current** error output.
 > Even if the orchestrator provided a prior error list, call `buildProject()` fresh —
 > Phase 4C may have partially resolved some errors that are no longer present.
 
-Parse the output into individual error entries. For each entry, note:
-- File path and line number
-- Error message text
-- Error code (if provided by the compiler)
+Take the entries with `severity: "error"` from the `errors` array in the result. Each
+carries `uri`, `line` and `message`.
 
 Record the error count:
 ```
