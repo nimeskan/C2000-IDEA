@@ -153,10 +153,11 @@ confirmed present.
 
 **Exclude the build output folder first:** the project-level report walks the whole project,
 including build output. Call `update_project_file_folder_exceptions` with the target project
-name, `operation: "add"`, and `paths: [<buildDirectoryLocation>]` — take
-`buildDirectoryLocation` from `getProjectDescriptors`; it is relative to the project root and
-need not exist yet. Use `"add"`, never `"set"`: `"set"` replaces the entire list and would
-discard exceptions the user configured.
+name, `operation: "add"`, and `paths: [<build directory, relative to the project root>]`.
+`getProjectDescriptors` returns `buildDirectoryLocation` as an absolute path: strip the target
+project directory from the front of it (e.g. `CPU1_RAM`). The folder need not exist yet. Use
+`"add"`, never `"set"`: `"set"` replaces the entire list and would discard exceptions the user
+configured.
 
 Call `get_project_migration_report(<target project name>, <source device>, [<target device>])`,
 passing the source and target devices from `c2000-migration.md` (matching the
