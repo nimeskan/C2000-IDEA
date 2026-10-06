@@ -24,7 +24,9 @@ issues, then build the project to confirm it compiles with no errors.
 | Source device | `<e.g. F28003x>` |
 | Target device | `<e.g. F28P55x>` |
 | Active build config | `<e.g. CPU1_FLASH>` |
+| `c2000ware_path` | `<absolute path to C2000Ware root>` |
 | `sysConfigOutputLocation` | `<path — do not run migration report on files here>` |
+| Migration guide HTML | `<path, or "DOWNLOAD FAILED">` |
 | All `.h` and `.c` files migrated | `<list from Phase 4A and 4B logs>` |
 
 ---
