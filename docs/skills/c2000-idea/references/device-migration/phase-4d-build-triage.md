@@ -32,8 +32,8 @@ or invent values.
 | `sourceDevice` | Source device name (matches a `list_migration_devices()` entry, e.g. `F28003x`) | Phase 1 |
 | `targetDevice` | Target device name (matches a `list_migration_devices()` entry, e.g. `F28P55x`) | Phase 1 |
 | `c2000ware_path` | Absolute path to the C2000Ware root | Phase 1 (SDK resolution) |
-| `activeBuildConfig` | Active build configuration name (e.g., `CPU1_FLASH`) | Phase 2 (getToolFlags) |
-| `sysConfigOutputLocation` | SysConfig-generated output folder path | Phase 3 (getProjectDescriptors) |
+| `activeBuildConfig` | Active build configuration name (e.g., `CPU1_FLASH`) | Phase 2 (getProjectDescriptors) |
+| `sysConfigOutputLocation` | SysConfig-generated output folder path | Phase 2 (getProjectDescriptors) |
 | `buildErrorOutput` | `errors` array from Phase 4C's final buildProject result | Phase 4C structured result |
 | `buildLog` | Copy of Phase 4C's build log, or `inline` | Phase 4 orchestrator (Step 4.5) |
 | `migrationLogSummary` | Phase 4 progress table and deferred-errors list from c2000-migration.md | Phase 4C structured result |
