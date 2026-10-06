@@ -48,6 +48,7 @@ Call `list_migration_devices()` from IDEA MCP immediately after collecting input
   project-level report.
 
 **ccs-project MCP** (required):
+- `getProducts` — installed TI products (used as the Phase 0 availability probe)
 - `getProjectDescriptors` — project metadata (name, device, build config, `sysConfigOutputLocation`)
 - `getProjectProductReferences` — resolved SDK/product paths
 - `importProject` — import a CCS project from SDK examples
