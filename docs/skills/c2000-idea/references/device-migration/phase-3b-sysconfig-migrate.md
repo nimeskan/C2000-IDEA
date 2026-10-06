@@ -56,7 +56,8 @@ the full unfiltered list so the user can select the closest available target.
 
 ## 3.7 Migrate (source-has-syscfg only)
 
-Call `migrate(device, package)` using the user's selected device and package.
+Call `migrate` with the `device`, `package` and `variant` of the user's selected entry. If
+several entries share that device and package, use the first one's `variant`.
  > If the `migrate` tool for SysCofnig MCP repeatedly fails. Pause and ask the user to manually
  > click the migrate button in the SysConfig GUI and confirm that they have clicked the migrate button 
  > and saved the file.
