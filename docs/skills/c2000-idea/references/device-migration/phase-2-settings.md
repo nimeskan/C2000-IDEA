@@ -149,7 +149,7 @@ List all files in the cmd directory and identify the two key reference files:
 
 Read both files for context before reconciliation. If the build configuration selected in 2.0 is 
 tied to RAM or FLASH, use mainly the content from that linker cmd file. 
-Otherwise, ask the user for confirmation on which one to prioritize. If user is unused, default to FLASH.
+Otherwise, ask the user for confirmation on which one to prioritize. If user is unsure, default to FLASH.
 
 **Reconciliation:**
 
