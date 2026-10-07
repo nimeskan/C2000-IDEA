@@ -29,7 +29,9 @@ apply mismatches to the target.
 Call `getProjectDescriptors` with properties `activeBuildConfiguration` and `buildConfigurationIndex` on the **source** project and identify which build configuration it actively uses (typically `CPU1_FLASH` or `Debug`).
 
 Apply all Phase 2 settings to **that same configuration** in the target. Do not apply
-settings to a different build config by mistake.
+settings to a different build config by mistake. Pass that configuration name as
+`configuration` on every `getToolFlags` call, for both projects, and as
+`applicableConfigurations: [<name>]` on every `setToolFlags` call.
 
 **Update `c2000-migration.md`:** with active build configuration info. If the build configuration is tied to RAM or FLASH, make a note of this as
 it will be important when implementing the linker cmd file.
