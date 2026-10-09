@@ -46,19 +46,16 @@ user whether to skip — but do **not** skip unilaterally.
    > **Verify SysConfig-generated outputs are part of the build (required):**
    > After confirming the device-support module is present, verify that the files it
    > generates are actually compiled and linked by the target CCS project:
-   > 1. Call `getProjectDescriptors` and check `sysConfigOutputLocation`.
-   > 2. Confirm `device.c` exists in that folder and is listed as a source file in the
-   >    target project (call `getToolFlags` or check the project file list — CCS must
-   >    compile `device.c`, not just have it on disk).
-   > 3. Confirm the generated `.opt` file is passed to the compiler (it typically appears
-   >    as `--cmd_file=<path>/device.opt` or `@<path>/device.opt` in the compiler flags —
-   >    check via `getToolFlags` on the compiler tool). If missing, the compiler options
-   >    set by the device-support module (e.g., `--define=_LAUNCHXL_F28P55X`) will not
-   >    apply and the build may succeed but produce incorrect device-configuration code.
-   > 4. If either `device.c` is not compiled or `.opt` is not referenced, flag it to
-   >    the user: *"The SysConfig device-support module generated `device.c` and `.opt`
-   >    but they do not appear to be included in the CCS build. Please add them manually
-   >    or verify the project's SysConfig output path is set correctly in CCS."*
+   > Check the output of the 5.1 build (`output`, or the file at `outputFilePath`). These
+   > files are added by CCS at build time and do not appear in `getToolFlags`.
+   > 1. `device.c` is compiled: the output contains `building file: "syscfg/device.c"`.
+   > 2. The generated `.opt` files are passed to the compiler: the compile lines contain
+   >    `--cmd_file="syscfg/board.opt"` and `--cmd_file="syscfg/c2000ware_libraries.opt"`.
+   >    `board.opt` carries the device define (e.g. `--define=F28P55x=1`) and the target
+   >    driverlib include paths.
+   > 3. If either is missing, flag it to the user: *"The SysConfig device-support module
+   >    generated `device.c` and `.opt` files, but they are not in the CCS build. Verify the
+   >    project's SysConfig output path in CCS."*
 
 6. **SDK version change** — source C2000Ware SDK version → target C2000Ware SDK version.
    Obtain these from the source and target projects' SDK paths or from the Phase 1 import
