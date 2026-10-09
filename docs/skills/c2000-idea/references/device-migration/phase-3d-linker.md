@@ -41,7 +41,8 @@ present, call `removeModuleInstances` on it. Go to 3D.4.
    `changesOnly: true`): `sectionMemory_*`, `sectionRun_*`, `userSection[n].*`,
    `<group>memoryCombination`.
 3. Memory combinations: every region in `combination` must be in the target `memoryRanges`.
-   `migrate` keeps missing regions without an error and the combined region shrinks. Set
+   `migrate` keeps missing regions without an error: the combined region shrinks, or is
+   generated empty (`origin = 0xFFFFFFFF, length = 0x000000`) when none remain. Set
    `combination` to contiguous target regions of that group whose total length is ≥ the
    source combination's.
 4. Fix every error whose `moduleId` starts with `/utilities/cmd_tool/` at the `moduleId`,
