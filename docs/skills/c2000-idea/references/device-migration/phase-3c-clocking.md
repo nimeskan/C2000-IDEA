@@ -43,7 +43,7 @@ Read `## Source clock configuration` from `c2000-migration.md` (recorded in Phas
 ## 3C.3 Run the CPU at the target maximum
 
 The target's C2000Ware `device.h` gives the maximum-speed PLL settings and SYSCLK, in the
-oscillator branch matching 3C.2:
+oscillator branch matching 3C.2, or its only branch:
 `<c2000ware_path>/device_support/<target-device>/common/include/device.h`
 
 Apply its PLL multiplier and dividers. If the oscillator frequency differs from the one in
