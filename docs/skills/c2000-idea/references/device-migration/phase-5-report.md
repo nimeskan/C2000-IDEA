@@ -72,7 +72,7 @@ user whether to skip — but do **not** skip unilaterally.
    > Scan `c2000-migration.md` for every line tagged with `REVIEW-REQUIRED:` or
    > `FEATURE-ABSENT:` and include them verbatim in this section. These include:
    > - `REVIEW-REQUIRED: clock …` (Phase 3C)
-   > - `REVIEW-REQUIRED: linker section <section> — region mapping needed` (Phase 3)
+   > - `REVIEW-REQUIRED: linker section …` (Phase 2, Phase 3D, Phase 4C)
    > - `REVIEW-REQUIRED: hardcoded GPIO pin <N> — verify target device pinmux` (Phase 4)
    > - `FEATURE-ABSENT: <module> — peripheral not available on <target>` (Phase 3)
    > - Any `DEFERRED-MANUAL:` items from SysConfig version incompatibility

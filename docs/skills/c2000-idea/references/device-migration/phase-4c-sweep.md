@@ -175,6 +175,9 @@ buildProject(<target project name>)
 
 If the build passes: record `Final clean build: PASS` in `c2000-migration.md`.
 
+Search the build output for `#10247-D`. For each, record
+`REVIEW-REQUIRED: linker section <section> — no placement in the target linker command file`.
+
 If the build fails: record `Final clean build: FAIL — <X> errors` in
 `c2000-migration.md`. **Do not attempt further fixes here** — return the FAIL result to
 the orchestrator so it can dispatch Phase 4D (build error triage).

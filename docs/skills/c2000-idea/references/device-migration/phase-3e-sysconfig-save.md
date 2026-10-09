@@ -1,7 +1,7 @@
 # Phase 3E — Error Gate, Save, and Close
 
 > You are executing **Phase 3E** of the SysConfig migration.
-> Phases 3A–3C are complete and the target `.syscfg` is open.
+> Phases 3A–3D are complete and the target `.syscfg` is open.
 > **Do not read any other phase file.**
 
 ## 3E.1 Error gate (required)
@@ -23,7 +23,7 @@ peripheral `.c`/`.h`, `.opt`, `.cmd.genlibs`, and the `.cmd` when a CMD module i
 
 **Update `c2000-migration.md`:** Record Phase 3 as COMPLETE. Log whether the source had a
 syscfg, the device-support module status, the target device/package/variant, errors found
-and resolved, the CMD-module result, the Phase 3C clock summary, and any unresolved
+and resolved, the Phase 3C clock summary, the Phase 3D linker placement, and any unresolved
 SysConfig issues.
 
 **Phase 3 complete.** Present a summary to the user and ask: *"Phase 3 is complete. Does

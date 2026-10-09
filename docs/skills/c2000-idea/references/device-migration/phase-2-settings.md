@@ -131,9 +131,31 @@ or
 Source linker style: <CMD module | plain .cmd> (user-supplied — ccs-sysconfig MCP unavailable)
 ```
 
-**If the source uses a CMD module:** no linker file work in this phase. The
-target keeps a CMD module in its syscfg, and the sections are reconciled during the SysConfig
-migration (Phase 3). Skip the rest of this step.
+**Source linker sections (both styles):**
+
+Map file: the `-m` / `--map_file` name in the source linker flags (step 2.4), in the source
+project's `buildDirectoryLocation` (`getProjectDescriptors`).
+- Map file exists: use it.
+- Otherwise: call `buildProject` on the source project and `waitForResult` until it
+  completes. If the build fails, change nothing to make it pass. Continue without sizes and
+  record `REVIEW-REQUIRED: source map unavailable — section sizes not checked`.
+
+From `SECTION ALLOCATION MAP`, record every output section with a non-zero length: name, the
+input section names in parentheses, origin, length, and `RUN ADDR` when present. Add
+`.text.1`, `.text.2`, … into one `.text` entry. Classify each origin and `RUN ADDR` by the
+source region that contains it, using `memoryRanges` in
+`<c2000ware_path>/utilities/cmd_tool/cmd_syscfg/source/.meta/<source-device>_memoryInfo.js`.
+
+Record every `.cmd` file the source links in the active build configuration, then:
+```
+## Source linker sections
+Map: <path> / unavailable
+Source linker files: <file>, <file>
+| Section | Input sections | Region (group) | Length | Run region |
+|---|---|---|---|---|
+```
+
+**If the source uses a CMD module:** the sections are placed in Phase 3D. Skip the rest of this step.
 
 **If the source uses a plain `.cmd` file:** set up the target's plain `.cmd` file now, using
 the SDK's target-device reference as the starting point. (Phase 3 will remove the CMD
@@ -161,22 +183,11 @@ Otherwise, ask the user for confirmation on which one to prioritize. If user is 
 
 **Reconciliation:**
 
-Port user customizations from the source cmd onto the target device's cmd file:
-- The sections in the target should match the source project.
-- The memory regions assigned to sections should match as closely as possible.
-- Use the target device's RAM and flash cmd files as the ground truth for valid memory
-  regions and addresses on the target device.
-- **If a source section cannot be mapped** to any memory region in the target cmd file
-  (e.g., a memory block that does not exist on the target device), flag it to the user
-  — do not silently drop the section or invent a region name.
-- Memory regions are based on the Hardware of the source and target device, you cannot
-  add new regions that dont physically exist on the device hardware
-- If on the source device, sections were mapped to regions that dont exist on the target,
-  other similar regions should be used instead
-- Some sections are only relevant because of the presence of a peripheral or certain type of
-  memory, those sections can be dropped but must be noted in the `c2000-migration.md`.
-  Examples are these are MUTLI-CORE memory sections and regions, GSRAM availability, 
-  CAN message RAMs, etc.
+Read `linker-placement.md` and place every source section by its placement rules. Start from
+the reference file and keep its `MEMORY` block. Keep every linker symbol the source `.cmd`
+defines (`LOAD_START`, `RUN_START`, `LOAD_SIZE`, …). Without a CMD module, `Device_init()`
+copies `.TI.ramfunc` using `RamfuncsLoadStart`, `RamfuncsLoadSize` and `RamfuncsRunStart` on
+`_FLASH` builds.
 
 **Write the final CMD file:**
 
@@ -189,6 +200,10 @@ at link time.
 - For the name of the cmd file created in the target project, match the name with the source 
   project's linker cmd file name (replace any device name mentions with the target device 
   name).
+
+If the source links a peripheral headers `.cmd` (`*_headers_BIOS*.cmd` /
+`*_headers_nonBIOS*.cmd`, any case), copy the target's file of the same kind from
+`<c2000ware_path>/device_support/<target-device>/headers/cmd/` into the target project.
 
 **Remove `device_cmd.cmd.genlibs` from the target linker options:**
 

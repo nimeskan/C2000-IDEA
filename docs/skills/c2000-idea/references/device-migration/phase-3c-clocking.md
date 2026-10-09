@@ -4,7 +4,7 @@
 > Phase 3B is complete: the target `.syscfg` is open and migrated.
 > Your scope: run the target CPU at its maximum frequency and make every downstream clock
 > the application uses match the source.
-> **Do not read phase-3e or any other phase file yet.**
+> **Do not read phase-3d or any other phase file yet.**
 
 **Stop and ask the user** if any MCP tool call fails, returns an unexpected error, or
 produces a result you cannot interpret. Do not guess, retry blindly, or skip the step.
@@ -97,4 +97,4 @@ Oscillator: <source> → <target>
 ```
 followed by the `REVIEW-REQUIRED` lines.
 
-Read `phase-3e-sysconfig-save.md` and proceed.
+Read `phase-3d-linker.md` and proceed.

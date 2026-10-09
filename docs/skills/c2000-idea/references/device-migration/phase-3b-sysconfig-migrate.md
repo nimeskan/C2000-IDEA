@@ -1,10 +1,9 @@
-# Phase 3B — SysConfig Peripheral Migration and CMD Normalization
+# Phase 3B — SysConfig Peripheral Migration
 
 > You are executing **Phase 3B** of the SysConfig migration.
 > Phase 3A is complete: the target `.syscfg` is already open, the `device_support` module
 > is confirmed present.
-> Your scope: migrate peripheral configuration to the target device, normalize the CMD
-> module to match the source linker style.
+> Your scope: migrate peripheral configuration to the target device.
 > **Do not re-read phase-3a or any other phase file.**
 
 **Stop and ask the user** if any MCP tool call fails, returns an unexpected error, or
@@ -15,8 +14,6 @@ produces a result you cannot interpret. Do not guess, retry blindly, or skip the
 ## Rules for Phase 3B
 
 - Do keep the source project unchanged — it is the golden reference.
-- Do mirror the source's linker style: a CMD module in the target syscfg if the source
-  used one, a plain `.cmd` (CMD module removed) if the source used a plain file.
 - Don't modify or migrate SysConfig-generated output files.
 - Don't invoke SysConfig MCP regeneration until the full `.syscfg` migration is complete.
 
@@ -32,7 +29,7 @@ If the `c2000-migration.md` checkpoint is missing or unclear, re-derive the path
   Inspect the returned module list contains `device_support` or not. If it is absent notify to user, and terminate the migration mentioning the reason.
 - check the status of whether source-has-syscfg (whether the source project had `.syscfg` file). If it did, then that source has been copied to the target    
   project already. If not then the universal project's syscfg file was kept.
-  In the case where there was no `.syscfg` file in the source project, we just need to normalize the CMD module. Hence jump to the 3.10 step. 
+  In the case where there was no `.syscfg` file in the source project, skip to "Phase 3B complete".
 
 ---
 
@@ -81,6 +78,7 @@ Call `getErrorsAndWarnings`. Review all errors and warnings.
 - Iterate until all errors are resolved.
 - If an issue cannot be resolved after reasonable investigation, report it to the user.
 - Leave errors whose `moduleId` starts with `/driverlib/clocktree/` to Phase 3C.
+- Leave errors whose `moduleId` starts with `/utilities/cmd_tool/` to Phase 3D.
 
 > **WARNING: Peripheral module entirely absent from the target device:**
 > Some errors indicate that a whole peripheral module (e.g., `EPWM`, `CMPSS`, `ADC`, `CLB` tile 
@@ -97,21 +95,6 @@ Call `getErrorsAndWarnings`. Review all errors and warnings.
 >    functionality differently or confirm it is not needed for your application."*
 > 5. Re-run `getErrorsAndWarnings` after removal to check for cascading errors.
 
-## 3.10 Normalize the CMD module (mirror the source linker style)
-
-Make the target syscfg's CMD module match the **source linker style** recorded in Phase 2
-(step 2.5). First call `getModuleInstances` to see whether a CMD module is currently present.
-
-- **Source used a CMD module** → the target keeps a CMD module. It should already be present
-  (it came in with the copied source syscfg).
-
-  If the CMD module is somehow absent, `addModuleInstances` to add it first.
-
-- **Source used a plain `.cmd` file** → the target must not have a CMD module (Phase 2
-  already set up the plain `.cmd`). If one is present (e.g., from the universal template),
-  call `removeModuleInstances` to remove CMD module, so it does not generate a competing linker
-  command file.
-
 ## Phase 3B complete — hand off to Phase 3C
 
 Write a micro-checkpoint to `c2000-migration.md`:
@@ -119,7 +102,6 @@ Write a micro-checkpoint to `c2000-migration.md`:
 Phase 3B: COMPLETE
   migrated to: <device / package / variant> (or: not migrated — source had no syscfg)
   errors resolved: <N>  deferred: <K>
-  CMD module: kept / removed
 ```
 
 **Do not call `save` or `closeFile` — the file stays open.** Read `phase-3c-clocking.md` and proceed.

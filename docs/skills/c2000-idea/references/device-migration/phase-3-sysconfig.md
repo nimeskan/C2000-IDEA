@@ -37,8 +37,9 @@ manually and record it as a deferred manual step in `c2000-migration.md`.
 | Sub-phase | File | Scope |
 |-----------|------|-------|
 | **3A** | `phase-3a-sysconfig-baseline.md` | Copy syscfg, open, ensure `device_support` module |
-| **3B** | `phase-3b-sysconfig-migrate.md` | Migrate peripherals, fix errors, normalize CMD |
+| **3B** | `phase-3b-sysconfig-migrate.md` | Migrate peripherals, fix errors |
 | **3C** | `phase-3c-clocking.md` | Target CPU at maximum, downstream clocks matched to the source |
+| **3D** | `phase-3d-linker.md` | Linker sections placed for the target in the source linker style |
 | **3E** | `phase-3e-sysconfig-save.md` | Error gate, save, close |
 
 ### Execution order
@@ -48,12 +49,13 @@ manually and record it as a deferred manual step in `c2000-migration.md`.
    It does **not** close the file.
 
 2. **After Phase 3A is done, read `phase-3b-sysconfig-migrate.md`** and complete Phase 3B.
-   Phase 3B covers peripheral migration (if source had a syscfg) and CMD module
-   normalization.
+   Phase 3B covers peripheral migration (if source had a syscfg).
 
 3. **After Phase 3B is done, read `phase-3c-clocking.md`** and complete Phase 3C.
 
-4. **After Phase 3C is done, read `phase-3e-sysconfig-save.md`** and complete Phase 3E.
+4. **After Phase 3C is done, read `phase-3d-linker.md`** and complete Phase 3D.
+
+5. **After Phase 3D is done, read `phase-3e-sysconfig-save.md`** and complete Phase 3E.
 
 > **Read one sub-phase file at a time.** Execute it fully before reading the next. This
 > prevents context overload on long SysConfig migrations.
