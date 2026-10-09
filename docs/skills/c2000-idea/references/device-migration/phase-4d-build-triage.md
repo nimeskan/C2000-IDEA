@@ -97,7 +97,7 @@ For each error, assign it to one of the four categories below. A single error ma
 exactly one category — use the first matching rule.
 
 ### Category A — Missing include / file not found
-**Pattern:** `fatal error: <header>.h: No such file or directory`
+**Pattern:** `fatal error #1965: cannot open source file "<header>.h"`
 
 **Fix strategy:**
 1. Check whether the missing header name contains the **source device name** (e.g.,
@@ -111,7 +111,10 @@ exactly one category — use the first matching rule.
    `Category A: no replacement found for <header>.h`
 
 ### Category B — Undefined symbol (function or variable)
-**Pattern:** `undefined reference to '<symbol>'` or `error: '<symbol>' undeclared`
+**Pattern:** `error #20: identifier "<symbol>" is undefined`, or
+`error #10234-D: unresolved symbols remain` with `<symbol>` listed under
+`undefined  first referenced` in the build log. If the build log also has
+`warning #225-D: function "<symbol>" declared implicitly`, use Category C.
 
 **Fix strategy:**
 1. Call `get_device_migration_report(<file path>, <source device>, [<target device>])`
@@ -125,8 +128,8 @@ exactly one category — use the first matching rule.
    `Category B: no authoritative replacement for '<symbol>'`
 
 ### Category C — Deprecated or renamed API
-**Pattern:** `error: implicit declaration of function '<api>'` or
-`warning-as-error: '<api>' is deprecated`
+**Pattern:** `warning #225-D: function "<api>" declared implicitly` for a function the
+link reports under `error #10234-D: unresolved symbols remain`
 
 **Fix strategy:**
 1. Call `get_device_migration_report(<file path>, <source device>, [<target device>])`
@@ -139,8 +142,8 @@ exactly one category — use the first matching rule.
    `Category C: peripheral absent on target — <api>`
 
 ### Category D — Linker / memory map error
-**Pattern:** `error: region '<region>' overflowed by <N> bytes` or
-`undefined symbol: <section>` in linker output
+**Pattern:** `error #10099-D: program will not fit into available memory` or
+`error #10080-D: length not specified for memory range <region>`
 
 **Fix strategy:**
 1. This is out of scope for automated symbol replacement. Do **not** modify linker

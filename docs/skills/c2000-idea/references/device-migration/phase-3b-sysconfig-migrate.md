@@ -69,8 +69,8 @@ Call `getErrorsAndWarnings`. Review all errors and warnings.
 - If a module or configurable no longer exists on the target device, use
   `getModuleDescription` and `getInstanceConfiguration` to explore available options
   and find the best equivalent.
-- **Only use configurable values that `getModuleDescription` lists as valid** — do not
-  invent values not in the allowed set.
+- **Only use values from the configurable's `choices` in `getInstanceConfiguration`** —
+  do not invent values not in the allowed set.
 - **If no valid equivalent value exists for a removed configurable**, do not set a
   placeholder — remove the configurable or leave it at the module default, and record
   it as a deferred item in `c2000-migration.md` for user review.
