@@ -176,6 +176,8 @@ Seed the log using this exact template — fill in every `<placeholder>`:
 | Phase 2 — Settings | `PENDING` | |
 | Phase 3 — SysConfig | `PENDING` | |
 | Phase 4 — Migrate Code | `PENDING` | |
+| Phase 4C — Sweep | `PENDING` | |
+| Phase 4D — Build Triage | `PENDING` | |
 | Phase 5 — Report | `PENDING` | |
 ```
 

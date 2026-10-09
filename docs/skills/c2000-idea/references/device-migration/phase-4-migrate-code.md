@@ -315,7 +315,8 @@ briefing template. Fill out all fields, including the complete deferred-errors l
 
 1. Check whether Phase 4C reported a **clean build (0 errors)** or a **non-passing build**.
 2. Aggregate all totals across 4A + 4B + 4C so far.
-3. If `Final clean build: PASS` → proceed directly to Step 4.6.
+3. If `Final clean build: PASS` → set the `Phase 4D — Build Triage` row to `NOT NEEDED` and
+   proceed directly to Step 4.6.
 4. If `Final clean build: FAIL` → proceed to Step 4.5 (build error triage).
 
 ---
@@ -353,7 +354,7 @@ If Phase 4C's final `buildProject()` call returned errors, dispatch a Phase 4D s
 
 Update `c2000-migration.md`:
 ```
-| Phase 4 — Code | COMPLETE | <N files> migrated, <M issues> fixed, clean build <PASS/FAIL with manual items> |
+| Phase 4 — Migrate Code | COMPLETE | <N files> migrated, <M issues> fixed, clean build <PASS/FAIL with manual items> |
 ```
 
 Present a complete summary to the user:

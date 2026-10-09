@@ -100,9 +100,9 @@ You must actively inspect the source SysConfig — do not guess from file names 
 
 1. Call `openFile` (ccs-sysconfig MCP) on the **source** project's `.syscfg` file path
    (obtain it from `getProjectDescriptors`).
-2. Call `getModuleInstances` and look for a module whose name contains `"CMD"` or
-   `"linkerCommandFile"` (exact module ID may vary — match case-insensitively).
-3. If such a module instance exists → **CMD module** style. If not → **Plain `.cmd`** style.
+2. Call `getModuleInstances` and look for the `moduleId`
+   `/utilities/cmd_tool/cmd_syscfg/source/CMD`.
+3. If an instance of it exists → **CMD module** style. If not → **Plain `.cmd`** style.
 4. While the file is open, record the source clocks (step 2.11).
 5. Call `closeFile` on the source syscfg immediately after detection — never leave it open.
 
@@ -303,6 +303,8 @@ Confirm with the user by showing the source and target project's folder structur
 
 ### Source `.syscfg` has `device_support`
 (`/driverlib/device_support.js` in `getModuleInstances`)
+
+Done in step 2.5 (detection step 4), while the source `.syscfg` is open.
 
 Call `getClockTreeInstances`, then `traceClockSignal` (`toPin: "out"`) on every instance of
 type `NamedConnection`. Read `OSCCLKSRCSEL` and `XTAL_OR_X1` with `getInstanceConfiguration`.

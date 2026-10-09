@@ -28,13 +28,15 @@ Read `## Source clock configuration` from `c2000-migration.md` (recorded in Phas
 
 ## 3C.2 Select the target oscillator
 
-- **Source ran from an internal oscillator:** keep `OSCCLKSRCSEL` on an internal oscillator.
+- **Source ran from an internal oscillator:** keep `inputSelect` of `OSCCLKSRCSEL` on an
+  internal choice (not `X1_XTAL`).
 - **Source ran from an external clock:** ask the user:
   > *"The source ran from <a crystal on XTAL | an oscillator on X1> at <f> MHz. What external
   > clock does the target board have, and at what frequency? Reply 'internal' to use the
   > target's internal oscillator."*
 
-  Set `XTAL_OR_X1`, that pin's `XTAL_Freq`, and `OSCCLKSRCSEL` to `X1_XTAL`.
+  Set `inputSelect` of `XTAL_OR_X1` to `XTAL` or `X1`, that pin's `XTAL_Freq`, and
+  `inputSelect` of `OSCCLKSRCSEL` to `X1_XTAL`.
 
 `traceClockSignal` on `OSCCLK` must report the selected frequency.
 

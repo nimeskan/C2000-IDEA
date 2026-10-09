@@ -101,7 +101,7 @@ user whether to skip — but do **not** skip unilaterally.
    > | H5 | **PWM output timing** | For EPWM/HRPWM: verify switching frequency, dead-band, and trip-zone assignments produce the expected waveforms on the target board. EPWM base addresses and clock dividers may differ. |
    > | H6 | **Communication bus loopback / protocol test** | For SPI, I2C, CAN/DCAN, MCAN, or UART (SCI): run a loopback or communicate with a known-good peripheral node to confirm the baud rate and bit-format are correct on the target device. |
    > | H7 | **Interrupt service confirmed** | Trigger at least one interrupt per ISR migrated (ADC EOC, EPWM period, GPIO, etc.) and confirm the CPU enters the ISR. Interrupt vector table offsets and PIE group assignments may have changed between devices. |
-   > | H8 | **Memory map / stack overflow** | Run the application through its full operating loop. Check the stack high-water mark in CCS (Expressions view → `_stack` symbol) to confirm no stack overflow occurred after linker section remapping. |
+   > | H8 | **Memory map / stack overflow** | Run the application through its full operating loop. Check the stack high-water mark in CCS (Expressions view → `__stack` symbol) to confirm no stack overflow occurred after linker section remapping. |
    >
    > **If any check fails:** record the failure in `c2000-migration.md` under
    > `## Phase 5 — Hardware verification` and open a targeted debug session.
