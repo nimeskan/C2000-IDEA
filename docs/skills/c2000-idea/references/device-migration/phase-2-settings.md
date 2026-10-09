@@ -144,9 +144,16 @@ module from the target syscfg so it does not generate a competing linker file.)
 The reference cmd files are located at:
 `<c2000ware_path>/device_support/<target-device>/common/cmd/`
 
-List all files in the cmd directory and identify the two key reference files:
-- The **RAM** linker cmd — file name ends with `_generic_ram_lnk.cmd`
-- The **flash** linker cmd — file name ends with `_generic_flash_lnk.cmd`
+The two reference files:
+
+| Target device | RAM linker cmd | Flash linker cmd |
+|---|---|---|
+| f2837xd | `2837xD_RAM_lnk_cpu1.cmd` | `2837xD_FLASH_lnk_cpu1.cmd` |
+| f2837xs | `2837xS_Generic_RAM_lnk.cmd` | `2837xS_Generic_FLASH_lnk.cmd` |
+| f2807x | `2807x_Generic_RAM_lnk.cmd` | `2807x_Generic_FLASH_lnk.cmd` |
+| f2838x | `2838x_RAM_lnk_cpu1.cmd` | `2838x_FLASH_lnk_cpu1.cmd` |
+| f28p65x | `28p65x_generic_ram_lnk_cpu1.cmd` | `28p65x_generic_flash_lnk_cpu1.cmd` |
+| All other devices | name ends with `_generic_ram_lnk.cmd` | name ends with `_generic_flash_lnk.cmd` |
 
 Read both files for context before reconciliation. If the build configuration selected in 2.0 is 
 tied to RAM or FLASH, use mainly the content from that linker cmd file. 
@@ -176,12 +183,21 @@ Port user customizations from the source cmd onto the target device's cmd file:
 After all decisions are made, write exactly one linker cmd file to the target project —
 the one matching the active build configuration from step 2.0. Do NOT write a second cmd
 file for the other configuration; reading both reference files for context does not mean
-writing both. Delete any other `_generic_ram_lnk.cmd` or `_generic_flash_lnk.cmd` files
-already present in the target project directory — the imported starter ships with both,
-and leaving them causes duplicate MEMORY region errors at link time.
+writing both. Delete any other RAM or flash linker cmd file from the table above already
+present in the target project directory — leaving it causes duplicate MEMORY region errors
+at link time.
 - For the name of the cmd file created in the target project, match the name with the source 
   project's linker cmd file name (replace any device name mentions with the target device 
   name).
+
+**Remove `device_cmd.cmd.genlibs` from the target linker options:**
+
+If the target's linker flags for the active build configuration (`getToolFlags`) contain
+`device_cmd.cmd.genlibs`, delete its `<listOptionValue value="device_cmd.cmd.genlibs"/>` line
+from that configuration in the target project's `.cproject`, then read the flags back with
+`getToolFlags`. If it is still listed, stop and tell the user. Without the CMD module the
+file is not generated, and the link fails with
+`error #10008-D: cannot find file "device_cmd.cmd.genlibs"`.
 
 ## 2.6 Libraries
 
