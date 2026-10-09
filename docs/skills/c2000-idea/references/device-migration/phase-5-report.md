@@ -71,7 +71,7 @@ user whether to skip — but do **not** skip unilaterally.
    > **Required: enumerate all `REVIEW-REQUIRED` and `FEATURE-ABSENT` items from the log:**
    > Scan `c2000-migration.md` for every line tagged with `REVIEW-REQUIRED:` or
    > `FEATURE-ABSENT:` and include them verbatim in this section. These include:
-   > - `REVIEW-REQUIRED: device_support clock/oscillator settings` (Phase 3)
+   > - `REVIEW-REQUIRED: clock …` (Phase 3C)
    > - `REVIEW-REQUIRED: linker section <section> — region mapping needed` (Phase 3)
    > - `REVIEW-REQUIRED: hardcoded GPIO pin <N> — verify target device pinmux` (Phase 4)
    > - `FEATURE-ABSENT: <module> — peripheral not available on <target>` (Phase 3)
@@ -94,7 +94,7 @@ user whether to skip — but do **not** skip unilaterally.
    >
    > | # | Check | How to verify |
    > |---|-------|---------------|
-   > | H1 | **System clock correct** | Halt in CCS debugger immediately after `Device_init()` / `SysCtl_setClock()`. Inspect `PLLSYSCLK` via the `SysCtl` register view or an oscilloscope on a clocked output pin. Compare against the Phase 3 reference value captured in `c2000-migration.md` (`## Phase 3 — Source clock configuration`). |
+   > | H1 | **System clock correct** | Halt in CCS debugger immediately after `Device_init()` / `SysCtl_setClock()`. Inspect `PLLSYSCLK` via the `SysCtl` register view or an oscilloscope on a clocked output pin. Compare against `## Phase 3C — Target clock configuration` in `c2000-migration.md`. The target SYSCLK is the target maximum, not the source value. |
    > | H2 | **Peripheral clocks enabled** | Verify `SysCtl_enablePeripheral()` calls in `device.c` / `main.c` for each peripheral used. Confirm peripherals are accessible (no `NMIWDFLG` or bus fault on first register access). |
    > | H3 | **GPIO pinmux valid for target device** | Review all `REVIEW-REQUIRED: hardcoded GPIO pin` items from item 7. Check the target device's GPIO mux table (TRM) to confirm the pin assignments are available. A pin that existed on the source device may map to a different function or not exist on the target. |
    > | H4 | **ADC / comparator reference voltage** | If ADC or CMPSS modules are used, verify the reference voltage configuration matches the target board's hardware design. ADC `VREFHI`/`VREFLO` pinout and reference options differ between device families. |

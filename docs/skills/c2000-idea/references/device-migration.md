@@ -67,6 +67,8 @@ Call `list_migration_devices()` from IDEA MCP immediately after collecting input
 - `listMigrationTargets` — available target devices for SysConfig migration
 - `migrate` — migrate the configuration to a target device
 - `getErrorsAndWarnings` — validate configuration after changes
+- `getClockTreeInstances` — clock tree instances and their connections
+- `traceClockSignal` — frequency along a clock path
 - `changeConfiguration` — modify configuration values (atomic — all succeed or all revert)
 - `addModuleInstances` — add a module instance (e.g., the device-support module the target
   must always have, or a CMD module when the source uses one)
@@ -146,11 +148,13 @@ This workflow is split into six phases. **Execute them in strict order.**
 3. **Read `device-migration/phase-3-sysconfig.md`** — Ensure the target syscfg has the
    device-support module, migrate the source SysConfig (.syscfg) configuration if present,
    and normalize the CMD module to match the source linker style.
-   Phase 3 is an orchestrator that dispatches two sub-phases in sequence — the phase file
+   Phase 3 is an orchestrator that dispatches sub-phases in sequence — the phase file
    directs you to read them one at a time:
    - **3A** `device-migration/phase-3a-sysconfig-baseline.md` — copy syscfg, open it, ensure `device_support` module is present
-   - **3B** `device-migration/phase-3b-sysconfig-migrate.md` — migrate peripherals, fix errors, normalize CMD module, save, close
-   → When Phase 3B is complete, return here.
+   - **3B** `device-migration/phase-3b-sysconfig-migrate.md` — migrate peripherals, fix errors, normalize CMD module
+   - **3C** `device-migration/phase-3c-clocking.md` — target CPU at maximum, downstream clocks matched to the source
+   - **3E** `device-migration/phase-3e-sysconfig-save.md` — error gate, save, close
+   → When Phase 3E is complete, return here.
 
 4. **Read `device-migration/phase-4-migrate-code.md`** — Migrate all source code. Phase 4
    is an orchestrator: it builds the file list, records the migration strategy, then

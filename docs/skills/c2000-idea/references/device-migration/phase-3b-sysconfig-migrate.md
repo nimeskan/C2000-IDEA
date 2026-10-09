@@ -4,7 +4,7 @@
 > Phase 3A is complete: the target `.syscfg` is already open, the `device_support` module
 > is confirmed present.
 > Your scope: migrate peripheral configuration to the target device, normalize the CMD
-> module to match the source linker style, then save and close.
+> module to match the source linker style.
 > **Do not re-read phase-3a or any other phase file.**
 
 **Stop and ask the user** if any MCP tool call fails, returns an unexpected error, or
@@ -80,6 +80,7 @@ Call `getErrorsAndWarnings`. Review all errors and warnings.
 - After each fix, re-run `getErrorsAndWarnings` to check progress.
 - Iterate until all errors are resolved.
 - If an issue cannot be resolved after reasonable investigation, report it to the user.
+- Leave errors whose `moduleId` starts with `/driverlib/clocktree/` to Phase 3C.
 
 > **WARNING: Peripheral module entirely absent from the target device:**
 > Some errors indicate that a whole peripheral module (e.g., `EPWM`, `CMPSS`, `ADC`, `CLB` tile 
@@ -111,39 +112,14 @@ Make the target syscfg's CMD module match the **source linker style** recorded i
   call `removeModuleInstances` to remove CMD module, so it does not generate a competing linker
   command file.
 
-## 3.10a Error gate after CMD normalization (required)
+## Phase 3B complete — hand off to Phase 3C
 
-**Before saving, call `getErrorsAndWarnings` now** — after step 3.10 and before step 3.11.
+Write a micro-checkpoint to `c2000-migration.md`:
+```
+Phase 3B: COMPLETE
+  migrated to: <device / package / variant> (or: not migrated — source had no syscfg)
+  errors resolved: <N>  deferred: <K>
+  CMD module: kept / removed
+```
 
-- If the result contains **new errors**, treat them the same as in step 3.9 — fix with
-  `changeConfiguration`, then re-run `getErrorsAndWarnings` until zero errors remain.
-- If the result is **zero errors**, proceed to step 3.11.
-- If errors cannot be resolved, record them as deferred items in `c2000-migration.md`
-  and tell the user before deciding whether to save.
-
-## 3.11 Save
-
-**Only call `save` after the error gate in step 3.10a returns zero errors.** Saving with
-unresolved errors produces invalid generated output.
-
-Call `save` to persist the configuration and regenerate all artifacts.
-
-## 3.12 Close
-
-Call `closeFile`.
-
-The generated outputs are automatically correct after migration — `device.c`/`device.h`
-(from the device-support module), the peripheral `.c`/`.h`, the `.opt`, the `.cmd.genlibs`,
-and (when a CMD module is present) the generated `.cmd`. No manual migration is needed for
-any SysConfig-generated file.
-
-
-**Update `c2000-migration.md`:** Record Phase 3 as COMPLETE. Log whether the source had a
-syscfg, the device-support module status (present / added), the target device/package
-selected (if migrated), number of errors found and resolved, the CMD-module result (kept as
-module / removed for plain cmd), and any unresolved SysConfig issues.
-
-**Phase 3 complete.** Present a summary of what was done in this phase to the user and ask: *"Phase 3 is complete. Does
-everything look correct? Ready to move to Phase 4 (source code migration)?"* Wait for the
-user's confirmation, then **return to `device-migration.md`** (the workflow orchestrator
-that sent you here) and proceed to Phase 4.
+**Do not call `save` or `closeFile` — the file stays open.** Read `phase-3c-clocking.md` and proceed.

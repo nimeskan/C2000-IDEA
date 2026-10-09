@@ -100,7 +100,8 @@ You must actively inspect the source SysConfig — do not guess from file names 
 2. Call `getModuleInstances` and look for a module whose name contains `"CMD"` or
    `"linkerCommandFile"` (exact module ID may vary — match case-insensitively).
 3. If such a module instance exists → **CMD module** style. If not → **Plain `.cmd`** style.
-4. Call `closeFile` on the source syscfg immediately after detection — never leave it open.
+4. While the file is open, record the source clocks (step 2.11).
+5. Call `closeFile` on the source syscfg immediately after detection — never leave it open.
 
 **If the ccs-sysconfig MCP is not available** (Phase 0 soft-warned it): you cannot inspect
 the source `.syscfg`, and the rule above still holds — do not infer the style from file
@@ -266,6 +267,60 @@ Confirm with the user by showing the source and target project's folder structur
    ```
    Phase 2 settings verification: PASS — all applied settings confirmed via read-back.
    ```
+
+## 2.11 Source clock configuration
+
+### Source `.syscfg` has `device_support`
+(`/driverlib/device_support.js` in `getModuleInstances`)
+
+Call `getClockTreeInstances`, then `traceClockSignal` (`toPin: "out"`) on every instance of
+type `NamedConnection`. Read `OSCCLKSRCSEL` and `XTAL_OR_X1` with `getInstanceConfiguration`.
+If the ccs-sysconfig MCP is unavailable, read OSCCLK, SYSCLK and LSPCLK from the
+`clocktree.h` in the source's `sysConfigOutputLocation`.
+
+### Otherwise — find the clock code by content, not by file name
+
+Search every source and header file from the inventory (2.7) and the include paths (2.3) for:
+
+- Calls: `SysCtl_setClock`, `InitSysPll`, `InitAuxPll`, `SysCtl_setAuxClock`,
+  `SysCtl_setLowSpeedClock`, `SysCtl_setEPWMClockDivider`, `SysCtl_setMCANClk`,
+  `CAN_selectClockSource`, `SysCtl_setCLBClk`, `SysCtl_setCLBClkDivider`
+- Clock registers: `CLKSRCCTL1`, `CLKSRCCTL2`, `SYSPLLMULT`, `SYSCLKDIVSEL`, `LOSPCP`,
+  `PERCLKDIVSEL`, `AUXCLKDIVSEL`, `CLBCLKCTL`
+
+Use call sites and register writes only. Skip the definitions in driverlib `sysctl.c`/`sysctl.h`.
+Resolve each argument through its `#define`s, taking the `#if` branch that the project's
+predefined symbols (2.2) select.
+
+Frequencies:
+- Oscillator source: from the `SYSCTL_OSCSRC_*` value or the `InitSysPll` clock-source argument.
+- Internal oscillator frequency: `SYSCTL_DEFAULT_OSC_FREQ` (`SYSCTL_DEFAULT_SYSOSCDIV4_FREQ`
+  for SYSOSCDIV4) in `<c2000ware_path>/driverlib/<source-device>/driverlib/sysctl.h`.
+- External clock frequency: the macro passed to `SysCtl_getClock` or `DEVICE_OSCSRC_FREQ`.
+  If no macro states it, calculate it from the PLL settings and a SYSCLK the code
+  states (`DEVICE_SYSCLK_FREQ`, `CPU_RATE`, `CPU_FRQ_<n>MHZ`).
+- SYSCLK, LSPCLK and the other clocks: calculate them from the oscillator frequency and the
+  resolved multiplier and divider values.
+
+A value the application sets after the main clock setup replaces the earlier value.
+
+### Not determined
+
+If the search finds no clock setup, finds only a precompiled library, or the results
+conflict, ask the user:
+> *"I could not determine the source clock configuration. What are the source oscillator
+> (internal / crystal / external oscillator) and its frequency, SYSCLK, and LSPCLK?"*
+
+Record:
+```
+## Source clock configuration
+Found in: <syscfg | file:line, …>
+Oscillator: <INTOSC2 | SYSOSCDIV4 | XTAL | X1> <f> MHz
+| Clock | Frequency |
+|---|---|
+| SYSCLK | <f> MHz |
+| <clock> | <f> MHz |
+```
 ---
 
 **Update `c2000-migration.md`:** Record Phase 2 as COMPLETE. Log the settings compared and
