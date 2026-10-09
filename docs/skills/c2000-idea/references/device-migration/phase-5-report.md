@@ -66,7 +66,7 @@ user whether to skip — but do **not** skip unilaterally.
    → C2000Ware_5.04.00.00`). If versions are unknown, state "SDK version information not
    recorded — verify manually from project SDK paths."
 7. **Deferred / manual actions** — anything the user must do before the project is
-   production-ready (SysConfig, hardware testing, bitfield migration if not done).
+   production-ready (SysConfig, hardware testing).
 
    > **Required: enumerate all `REVIEW-REQUIRED` and `FEATURE-ABSENT` items from the log:**
    > Scan `c2000-migration.md` for every line tagged with `REVIEW-REQUIRED:` or
@@ -116,68 +116,6 @@ mark the migration status as "complete with outstanding build issues" — not fu
 
 ---
 
-## 5.3 Bitfield register access scan (required before declaring migration finished)
-
-Before declaring the migration complete, scan all migrated `.c` and `.h` files for
-**bitfield-style register access patterns** that were not converted during migration.
-The device-migration workflow migrates driverlib API symbols — it does not automatically
-convert bitfield register access patterns.
-
-**Patterns to search for** (scan every migrated file):
-
-| Pattern | Example |
-|---------|---------|
-| `->bit.<FIELDNAME>` | `AdcaRegs->bit.ADCCTL1` |
-| `<Module>Regs.<REGISTER>` | `AdcaRegs.ADCCTL1.bit.ADCBSYCHN` |
-| `<Module>Regs.<REGISTER>.all` | `EpwmRegsArray[0]->TBCTL.all` |
-| Struct pointer with `.bit.` dereference | `pADC->ADCCTL1.bit.INTPULSEPOS` |
-
-**How to search:** Scan file text for `->bit.`, `.bit.`, and the pattern
-`[A-Za-z]+Regs[._]` (case-sensitive). Do **not** use the bare string `Regs.` alone —
-it is too broad and will match non-bitfield identifiers (e.g., `pUartRegs.count`).
-The pattern `[A-Za-z]+Regs[._]` is specific enough to target the C2000 bitfield register
-naming convention while avoiding false positives.
-
-> **Skip comment lines and string literals:** When scanning, skip any line that is:
-> - A single-line comment (line starts with `//` after optional whitespace).
-> - Inside a block comment (`/* ... */` span). If a `/*` is open and `*/` has not yet
->   appeared, all intervening lines are comments — skip them.
-> - Inside a string literal (the pattern appears between `"..."` quotes) — this is
->   documentation or a debug print, not a register access.
-> Only count occurrences in actual executable code lines.
-
-**If no bitfield patterns are found:**
-- Record in `c2000-migration.md`: `Bitfield scan: CLEAN — no bitfield patterns detected.`
-- Proceed to complete Phase 5 normally.
-
-**If bitfield patterns are found:**
-- Count the number of occurrences and list the files affected.
-- Record in `c2000-migration.md`:
-  ```
-  Bitfield scan: PATTERNS FOUND
-  Files: <list>
-  Occurrences: <N>
-  ```
-- Add the following to the **Deferred / manual actions** section of the structured summary
-  (item 7 above):
-
-  > **WARNING: Bitfield register access patterns detected in migrated source files.**
-  > These patterns (`->bit.`, `<Module>Regs.`) use the C2000 bitfield register layer
-  > which is device-specific and was **not** converted by the device-migration workflow.
-  > Leaving them in place may compile but will access wrong registers on the target device
-  > if the register layout or address has changed.
-  >
-  > **Required next step:** Run the **bitfield-to-driverlib migration skill** to convert
-  > these patterns to the portable driverlib API layer for the target device.
-  > In your AI agent environment, invoke the bitfield-to-driverlib skill from SKILL.md.
-  > Files affected: `<list of files with hits>`
-
-- Do **not** block the Phase 5 report on this — record it as a required follow-up action
-  and include it in the report. The device-migration itself is complete; the bitfield
-  conversion is a separate, distinct step.
-
----
-
 **Update `c2000-migration.md`:** Record Phase 5 as COMPLETE. Add the final build status
 and any remaining action items.
 
@@ -188,9 +126,8 @@ and any remaining action items.
   report (item 7 above). Do not mark the migration as complete if any of these are
   unresolved without the user's awareness: SysConfig manual reconfiguration, custom
   `.lib` recompilation, unmappable linker sections, unresolved migration symbols,
-  `REVIEW-REQUIRED` items (GPIO/pinmux, clock settings, linker section remapping),
-  `FEATURE-ABSENT` peripherals, and **bitfield patterns requiring conversion** (if found
-  in step 5.3 above).
+  `REVIEW-REQUIRED` items (GPIO/pinmux, clock settings, linker section remapping), and
+  `FEATURE-ABSENT` peripherals.
 
 **Phase 5 complete.** The device-to-device migration workflow is finished. Ask the user
 if they have any questions about the migration results or if any items need further

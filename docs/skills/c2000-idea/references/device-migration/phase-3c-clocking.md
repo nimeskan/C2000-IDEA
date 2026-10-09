@@ -65,10 +65,9 @@ Record these only for clocks whose peripherals the application uses.
 
 Search the application files copied in Phase 2 (step 2.7) and record `REVIEW-REQUIRED` for:
 
-1. Clocks set outside SysConfig — `SysCtl_setClock`, `InitSysPll`, `InitAuxPll`,
-   `SysCtl_setAuxClock`, `SysCtl_setLowSpeedClock`, `SysCtl_setEPWMClockDivider`,
-   `SysCtl_setMCANClk`, `CAN_selectClockSource`, `SysCtl_setCLBClk`,
-   `SysCtl_setCLBClkDivider`:
+1. Clocks set outside SysConfig — `SysCtl_setClock`, `SysCtl_setAuxClock`,
+   `SysCtl_setLowSpeedClock`, `SysCtl_setEPWMClockDivider`, `SysCtl_setMCANClk`,
+   `CAN_selectClockSource`, `SysCtl_setCLBClk`, `SysCtl_setCLBClkDivider`:
    `REVIEW-REQUIRED: <file>:<line> sets a clock outside SysConfig`
 2. A number passed as the clock argument of `SCI_setConfig`, `SPI_setConfig`,
    `I2C_initController` or `CAN_setBitRate` instead of `DEVICE_SYSCLK_FREQ` /

@@ -201,10 +201,6 @@ at link time.
   project's linker cmd file name (replace any device name mentions with the target device 
   name).
 
-If the source links a peripheral headers `.cmd` (`*_headers_BIOS*.cmd` /
-`*_headers_nonBIOS*.cmd`, any case), copy the target's file of the same kind from
-`<c2000ware_path>/device_support/<target-device>/headers/cmd/` into the target project.
-
 **Remove `device_cmd.cmd.genlibs` from the target linker options:**
 
 If the target's linker flags for the active build configuration (`getToolFlags`) contain
@@ -313,9 +309,9 @@ If the ccs-sysconfig MCP is unavailable, read OSCCLK, SYSCLK and LSPCLK from the
 
 Search every source and header file from the inventory (2.7) and the include paths (2.3) for:
 
-- Calls: `SysCtl_setClock`, `InitSysPll`, `InitAuxPll`, `SysCtl_setAuxClock`,
-  `SysCtl_setLowSpeedClock`, `SysCtl_setEPWMClockDivider`, `SysCtl_setMCANClk`,
-  `CAN_selectClockSource`, `SysCtl_setCLBClk`, `SysCtl_setCLBClkDivider`
+- Calls: `SysCtl_setClock`, `SysCtl_setAuxClock`, `SysCtl_setLowSpeedClock`,
+  `SysCtl_setEPWMClockDivider`, `SysCtl_setMCANClk`, `CAN_selectClockSource`,
+  `SysCtl_setCLBClk`, `SysCtl_setCLBClkDivider`
 - Clock registers: `CLKSRCCTL1`, `CLKSRCCTL2`, `SYSPLLMULT`, `SYSCLKDIVSEL`, `LOSPCP`,
   `PERCLKDIVSEL`, `AUXCLKDIVSEL`, `CLBCLKCTL`
 
@@ -324,12 +320,11 @@ Resolve each argument through its `#define`s, taking the `#if` branch that the p
 predefined symbols (2.2) select.
 
 Frequencies:
-- Oscillator source: from the `SYSCTL_OSCSRC_*` value or the `InitSysPll` clock-source argument.
+- Oscillator source: from the `SYSCTL_OSCSRC_*` value.
 - Internal oscillator frequency: `SYSCTL_DEFAULT_OSC_FREQ` (`SYSCTL_DEFAULT_SYSOSCDIV4_FREQ`
   for SYSOSCDIV4) in `<c2000ware_path>/driverlib/<source-device>/driverlib/sysctl.h`.
 - External clock frequency: the macro passed to `SysCtl_getClock` or `DEVICE_OSCSRC_FREQ`.
-  If no macro states it, calculate it from the PLL settings and a SYSCLK the code
-  states (`DEVICE_SYSCLK_FREQ`, `CPU_RATE`, `CPU_FRQ_<n>MHZ`).
+  If no macro states it, calculate it from the PLL settings and `DEVICE_SYSCLK_FREQ`.
 - SYSCLK, LSPCLK and the other clocks: calculate them from the oscillator frequency and the
   resolved multiplier and divider values.
 
