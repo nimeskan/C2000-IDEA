@@ -46,6 +46,9 @@ Call `list_migration_devices()` from IDEA MCP immediately after collecting input
 - `get_device_migration_report()` — run migration analysis on a single source file. Called
   **iteratively** throughout Phase 4 — the per-file workhorse, used far more often than the
   project-level report.
+- `download_migration_guide()` — download the driverlib migration-guide HTML for the
+  device pair (Phase 4, Step 4.pre).
+- `get_migration_guide_section()` — read one symbol's section from that HTML (Phases 4A–4C).
 
 **ccs-project MCP** (required):
 - `getProducts` — installed TI products (used as the Phase 0 availability probe)
@@ -54,6 +57,7 @@ Call `list_migration_devices()` from IDEA MCP immediately after collecting input
 - `importProject` — import a CCS project from SDK examples
 - `renameProject` — rename a CCS project
 - `buildProject` — build a project
+- `waitForResult` — wait for a tool that returned a `taskId` (e.g., `buildProject`)
 - `getToolFlags` / `setToolFlags` — read/write compiler/linker flags
 - `getToolOptions` — available build tool options
 

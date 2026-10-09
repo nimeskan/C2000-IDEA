@@ -33,8 +33,11 @@ settings to a different build config by mistake. Pass that configuration name as
 `configuration` on every `getToolFlags` call, for both projects, and as
 `applicableConfigurations: [<name>]` on every `setToolFlags` call.
 
-**Update `c2000-migration.md`:** with active build configuration info. If the build configuration is tied to RAM or FLASH, make a note of this as
-it will be important when implementing the linker cmd file.
+**Update `c2000-migration.md`:**
+```
+Active build config: <configuration name>
+Active build config memory: <RAM | FLASH | not tied>
+```
 
 **For every step in this phase:** before applying any change, tell the user what you
 found (source value vs. target value) and what you plan to apply.
@@ -228,6 +231,7 @@ that should come from the new SDK (ignore these). Use these heuristics:
 - **Files referenced from SDK paths** are device/library files — ignore them.
 - **SDK files copied into the project** — sometimes `device.c`/`device.h` or driverlib
   files are copied into the project. These are easily detectable by name and should be ignored.
+- **Linker command files (`.cmd`)** — do not copy; step 2.5 writes the target's.
 - **SysConfig-generated files** — ignore these; they are regenerated after SysConfig
   migration. Detect them using CCS Project MCP:
   - Use `sysConfigOutputLocation` from `getProjectDescriptors` to find the SysConfig
