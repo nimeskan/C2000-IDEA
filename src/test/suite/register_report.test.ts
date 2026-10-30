@@ -100,6 +100,25 @@ suite('register bitfield agent report', () => {
 		assert.ok(!open, 'the report ends inside an open code fence');
 	});
 
+	test('no issue offers a suggested replacement or a checklist', () => {
+		assert.ok(!report.includes('Suggested replacement'), 'the report mentions a suggested replacement');
+		assert.ok(!report.includes('Action checklist:'), 'an issue carries an action checklist');
+	});
+
+	test('every issue lists candidates with a definitions call, or the raw access details', () => {
+		const issues = report.split(/^#### Issue /m).slice(1);
+		assert.ok(issues.length > 0, 'no issues in the report');
+
+		for (const issue of issues) {
+			const title = issue.split('\n')[0];
+			if (issue.includes('**Available driverlib functions:**')) {
+				assert.ok(issue.includes('get_driverlib_function(device: "'), `${title}: no definitions call`);
+			} else {
+				assert.ok(/\*\*Raw access:\*\* \d+-bit register, offset 0x/.test(issue), `${title}: no raw access details`);
+			}
+		}
+	});
+
 	// The MCP call has no editor or active project, so the device has to come
 	// from the argument.
 	test('a device passed in names the device and puts signatures on the candidates', () => {

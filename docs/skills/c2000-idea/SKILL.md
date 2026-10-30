@@ -72,7 +72,7 @@ Notes:
   - **ccs-project MCP** — project creation, build, and settings management
   - **ccs-sysconfig MCP** — SysConfig file analysis and migration
   - **ti-asm-mcp** — device TRM access for register definitions, bit-field details, and
-    peripheral descriptions; query this when a report issue has no `Suggested fix` or
+    peripheral descriptions; query this when a report issue lists no candidate driverlib function or
     when register-level intent must be verified before constructing a replacement
 - Bitfield-to-driverlib conversion modernizes legacy bitfield register-structure accesses
   (`PeriphRegs.REG.bit.FIELD`) into driverlib calls for the *same* device. There is no

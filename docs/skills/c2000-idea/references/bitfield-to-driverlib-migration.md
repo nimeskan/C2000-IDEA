@@ -33,6 +33,8 @@ For each C/H source file to convert:
   with the absolute file path and the device from step 1.
 - The tool returns a structured markdown report and populates VS Code
   diagnostics (squiggly underlines) as a side effect.
+- Work one file at a time: convert it, run the report on it again, then move
+  on to the next file.
 
 ### 3. Understand the report structure
 
@@ -40,22 +42,25 @@ The report groups every bitfield register access into one of four fix types:
 
 | Fix type | Meaning | Approach |
 |----------|---------|----------|
-| **write** | Bitfield assignment (`Regs.FIELD.bit.NAME = value`) | Apply the suggested driverlib write function |
-| **read** | Bitfield read (`x = Regs.FIELD.bit.NAME`) | Apply the suggested driverlib read function |
+| **write** | Bitfield assignment (`Regs.FIELD.bit.NAME = value`) | Use the matching driverlib write function from the candidates |
+| **read** | Bitfield read (`x = Regs.FIELD.bit.NAME`) | Use the matching driverlib read function from the candidates |
 | **access** | Bitfield access in an expression | Choose the best-matching driverlib function from the available list |
 | **whole** | Whole-register access (`Regs.FIELD.all = value`) | Consider a driverlib peripheral configuration function instead of raw register write |
 
 Each issue includes:
 - **Original pattern** — the exact source line
-- **Suggested replacement** — a concrete driverlib call (when available, apply directly)
-- **Available driverlib functions** — candidate functions (when no single suggestion, pick the best match)
+- **Available driverlib functions** — candidate functions with their signatures,
+  listed per register (not per bit); pick the one that matches the field
+- **Function definitions** — the exact `get_driverlib_function` call that returns
+  the source, with comments, of the candidates
+- **Raw access** — register width and offset, given when no candidate exists
 - **Register Bit Details** — shift, mask, and description for manual fixes
 - **TRM Link** — link to the register documentation
 
 **Reading TRM links:** Each issue may include a `TRM Link` pointing to the register's
-documentation in the device Technical Reference Manual. When no `Suggested replacement`
-is available and the register bit details (shift, mask, description) are insufficient
-to construct a correct driverlib call, fetch the TRM link using this protocol:
+documentation in the device Technical Reference Manual. When the register bit
+details (shift, mask, description) are insufficient to construct a correct
+driverlib call, fetch the TRM link using this protocol:
 
 1. **Do not attempt to retrieve from the web** — These links are only for the user to 
   read information from the browser when they want to look at documentation.
@@ -72,14 +77,17 @@ to construct a correct driverlib call, fetch the TRM link using this protocol:
 Work through issues in file order. For each issue:
 
 1. Navigate to the reported line/column.
-2. If a **Suggested replacement** is provided, apply it directly.
-3. If only **Available driverlib functions** are listed, choose the best-matching
-   function and construct the call with the correct arguments using the register
-   bit details.
-4. For **whole**-register writes with no driverlib suggestion, consider whether a
+2. Choose the function from **Available driverlib functions** that matches the
+   field and construct the call with the correct arguments using its signature
+   and the register bit details. If the signature is not enough, call
+   `get_driverlib_function` (the report shows the exact call).
+3. If no function is listed, use the **Raw access** details and the register bit
+   details (shift, mask).
+4. For **whole**-register writes with no candidate function, consider whether a
    driverlib peripheral configuration function is more appropriate than a raw
    register write.
-5. Verify no other references to the original bitfield pattern remain in the file.
+5. After editing the file, run the report on it again; only issues on commented-out
+   lines should remain.
 
 ### 5. Report back
 
@@ -93,10 +101,9 @@ After processing all files:
 ## Do / Don't
 
 - Do take file paths and device names from `get_projects()` — never invent them.
-- Do apply suggested replacements directly when they are provided.
 - Do use Register Bit Details (shift, mask) to construct manual fixes when no
-  driverlib function is suggested.
-- Do run the report once per source file you intend to convert.
+  driverlib function is listed.
+- Do run the report on one source file at a time, and again after editing it.
 - Don't recall C2000 register-to-driverlib mappings from memory — the MCP is the
   source of truth.
 - Don't confuse this with device-to-device migration — bitfield-to-driverlib stays
