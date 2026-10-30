@@ -530,7 +530,7 @@ Pass the sourceDevice from get_projects() to identify the device family for regi
 
 				try {
 					await runBitfieldToDriverlibCheck(uri, sourceDevice);
-					const report = genBitfieldToDriverlibReport(false);
+					const report = genBitfieldToDriverlibReport(false, sourceDevice);
 
 					if (!report) {
 						return { content: [{ type: 'text' as const, text: 'No bitfield register migration issues found in the specified file.' }] };

@@ -99,4 +99,15 @@ suite('register bitfield agent report', () => {
 		}
 		assert.ok(!open, 'the report ends inside an open code fence');
 	});
+
+	// The MCP call has no editor or active project, so the device has to come
+	// from the argument.
+	test('a device passed in names the device and puts signatures on the candidates', () => {
+		const withDevice = register.exportRegisterBitfieldAgentReport(false, DEVICE);
+
+		assert.ok(withDevice.includes(`**Device:** ${DEVICE}`), 'the header does not name the device passed in');
+		assert.ok(!withDevice.includes('Device could not be determined'), 'the header says the device is unknown');
+		assert.ok(/^  - `\w+ \w+_\w+\(\w+ base[,)]/m.test(withDevice),
+			'no candidate is shown with its signature');
+	});
 });

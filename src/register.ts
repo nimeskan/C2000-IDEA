@@ -935,9 +935,8 @@ export async function registerBitfieldToDriverlibMigrationOnUri(uri: vscode.Uri,
 	registerDiagnosticsCollection.set(uri, registerDiagnostics);
 }
 
-function registerBitfieldAgentReportMDHeader(): string {
+function registerBitfieldAgentReportMDHeader(device: string): string {
 	const timestamp = new Date().toISOString();
-	let device = project.projectGetCurrentDevice();
 	
 	let deviceDisplay = device || "unknown";
 	let deviceNote = device ? "" : "\n> ⚠️ **Device could not be determined automatically.** Please infer from file paths, `#include` directives, or ask the user.\n";
@@ -1053,8 +1052,10 @@ If you encounter compilation errors after applying a fix from this report:
 	return header;
 }
 
-export function exportRegisterBitfieldAgentReport(openAfter: boolean = true): string {
-	let device = project.projectGetCurrentDevice();
+// sourceDevice names the device family the report is for. When it is omitted the
+// report uses the active project's device, which is empty outside the editor.
+export function exportRegisterBitfieldAgentReport(openAfter: boolean = true, sourceDevice?: string): string {
+	let device = sourceDevice || project.projectGetCurrentDevice();
 	let deviceDisplay = device || "unknown";
 	const driverlibSigMap = getDriverlibFunctionSignatures(device || '');
 
@@ -1129,7 +1130,7 @@ export function exportRegisterBitfieldAgentReport(openAfter: boolean = true): st
 	}
 
 	// Generate markdown report
-	let md = registerBitfieldAgentReportMDHeader();
+	let md = registerBitfieldAgentReportMDHeader(device);
 
 	// Summary statistics
 	md += `## Summary\n\n`;
