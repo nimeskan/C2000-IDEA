@@ -988,6 +988,7 @@ function registerBitfieldAgentReportMDHeader(device: string): string {
 > You are an AI coding agent tasked with migrating Texas Instruments C2000 embedded C code.
 > The source files contain **bitfield register access patterns** (e.g., \`Regs.REGISTER.bit.FIELD\`) that must be replaced with **driverlib API calls** appropriate for device \`${deviceDisplay}\`.
 > The issues in this report were detected by the C2000 IDEA VS Code extension via static analysis.
+> This report covers register accesses only. Other device_support code around them (includes, types, Init functions, the PIE vector table) is not listed; build the destination project and fix what the compiler reports.
 > Your goal is to edit each listed file so that no direct bitfield register accesses remain — use driverlib functions or, when unavailable, explicit read-modify-write register operations.
 > **SDK reference:** \`${sdkVersion}\` — all driverlib function names and register definitions must be verified against this SDK version.
 > **File modification protocol:** Present each change as a unified diff with 3 lines of context. For files under 100 lines, you may show the full modified file.

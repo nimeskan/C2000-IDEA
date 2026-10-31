@@ -89,7 +89,29 @@ Work through issues in file order. For each issue:
 5. After editing the file, run the report on it again; only issues on commented-out
    lines should remain.
 
-### 5. Report back
+### 5. Build and fix what remains
+
+The report covers register accesses only. The code around them may still use
+device_support names that a driverlib project does not have. Build the driverlib
+project that will hold the converted code and fix each error the compiler
+reports. Legacy integer and float types map to the C99 names, for example
+`Uint16` to `uint16_t`, `int32` to `int32_t` and `float32` to `float32_t`.
+Common ones:
+
+| device_support | driverlib |
+|----------------|-----------|
+| `#include "f28x_project.h"` | `#include "driverlib.h"`, `#include "device.h"` |
+| `Uint8`, `Uint16`, `Uint32`, `Uint64`, `int16`, `int32`, `int64` | `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`, `int16_t`, `int32_t`, `int64_t` |
+| `float32`, `float64` | `float32_t`, `float64_t` |
+| `bool_t`, `status_t` | `bool` |
+| `InitSysCtrl()` | `Device_init()` |
+| `InitGpio()` | `Device_initGPIO()` |
+| `InitPieCtrl()` | `Interrupt_initModule()` |
+| `InitPieVectTable()` | `Interrupt_initVectorTable()` |
+| `PieVectTable.X_INT = &isr;` | `Interrupt_register(INT_X, &isr);` |
+| `IER \|= M_INTn` | `Interrupt_enable(INT_X)` for the interrupt being enabled |
+
+### 6. Report back
 
 After processing all files:
 
