@@ -30,9 +30,9 @@ Fix each Defect following `phase-5-convert-rules.md`, rebuild (Phase 6) and comp
 
 ## 7.3 Timing and pins
 
-Run the timing analysis (`references/timing-analyzer.md`) and the pinout analysis
-(`references/pinout-analyzer.md`) of this skill on the source project and on the target project. Every
-result must be identical. Each difference is a Defect.
+Read `references/timing-analyzer.md` and `references/pinout-analyzer.md` of this skill and run both
+workflows, in full, on the source project and on the target project. Do not replace them with your own
+or the reviewer's comparison. Every result must be identical. Each difference is a Defect.
 
 ## 7.4 Leftovers
 
