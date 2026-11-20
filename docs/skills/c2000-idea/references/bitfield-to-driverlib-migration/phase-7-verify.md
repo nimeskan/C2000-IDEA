@@ -30,9 +30,14 @@ Fix each Defect following `phase-5-convert-rules.md`, rebuild (Phase 6) and comp
 
 ## 7.3 Timing and pins
 
-Read `references/timing-analyzer.md` and `references/pinout-analyzer.md` of this skill and run both
-workflows, in full, on the source project and on the target project. Do not replace them with your own
-or the reviewer's comparison. Every result must be identical. Each difference is a Defect.
+Do not read `references/timing-analyzer.md` or `references/pinout-analyzer.md` yourself. Start four
+analyzer sub-agents, one after the other: timing on the source project, timing on the target project,
+pinout on the source project, pinout on the target project. Brief each with the analyzer file to follow
+(its "Running as a sub-agent" section applies), the project name, directory and device, and for pinout
+the Phase 1 package. They write only their report files into each project.
+
+Do not replace them with your own or the reviewer's comparison. Compare the source and target results:
+every result must be identical. Each difference is a Defect.
 
 ## 7.4 Leftovers
 
