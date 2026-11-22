@@ -13,5 +13,9 @@ Write the final report to the log under `## Phase 8 — Report` and show it to t
 7. **To check on hardware:** clocks and oscillator, ADC trims and references, and every Defect fixed in
    Phase 7.
 8. **Builds:** the configurations built and the configurations not built.
+9. **Sub-agents run:** one converter per file (name each file), the four analyzers (timing and pinout, on
+   the source and the target) and the reviewer.
+
+If the list in item 9 is missing a sub-agent, go back and run it. Do not set Phase 8 to COMPLETE without it.
 
 Set Phase 8 to COMPLETE. The migration is complete.

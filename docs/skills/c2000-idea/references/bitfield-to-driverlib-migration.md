@@ -67,6 +67,18 @@ records as complete.
 
 ## How to run this workflow
 
+### Rules that are never skipped
+
+1. **You never edit a project source file.** A sub-agent converts every file, even a project with one file
+   or one register access. This keeps your context small enough for a project with many files. Use the
+   Agent tool. If you have no Agent tool, stop and tell the user.
+2. **Run phases 0 to 8 in order.** Read phase N only after the log shows phase N-1 COMPLETE. Do not read
+   ahead, and do not stop before Phase 8 is COMPLETE.
+3. **Phase 7 always starts four analyzer sub-agents and the reviewer sub-agent.** Whether an analyzer
+   applies to the project is the analyzer's decision, not yours.
+4. **The log is the gate.** Each phase file says what the log must show before the next phase starts. If
+   it does not show it, the phase is not complete.
+
 Read one phase file at a time, complete every step in it, then return here and read the next one. Phase 5
 dispatches sub-agents; the orchestrator never reads `phase-5-convert-rules.md` itself.
 

@@ -48,12 +48,19 @@ For each register-table row of this file:
 
 1. Pick the driverlib function that writes or reads the field: from the report's candidates, or from
    `<driverlib>/<module>.h`, `interrupt.h` and `sysctl.h` when the report lists none.
-2. Call `get_driverlib_function` and read the body: it must write exactly the fields you need, and you
-   must know what else it writes. One function can cover several rows; use one call for them.
-3. If no function fits, use `HWREG`/`HWREGH` with the base address from `inc/hw_memmap.h`, the offset
-   `<MODULE>_O_<REG>` and the field masks and shifts `<MODULE>_<REG>_<FIELD>_M`/`_S` from
-   `inc/hw_<module>.h`. Put `EALLOW`/`EDIS` around writes to protected registers.
-4. When the bit details are not enough, read the register in the TRM as Phase 3, step 3.2 describes.
+2. Call `get_driverlib_function` for every driverlib function you use, and read its signature and body:
+   it must write exactly the fields you need, you must know what else it writes, and you must know what
+   it returns (a `bool` is 0 or 1, never a mask). Never use a function you have not read. One function can
+   cover several rows; use one call for them.
+3. `HWREG`/`HWREGH` is the last resort. Before using it, search the driverlib headers of the module
+   (`<driverlib>/<module>.h`) for a function that writes the register or field. If one exists, use it: a
+   function that writes the same register is always better than a raw write. Only if none exists, use
+   `HWREG`/`HWREGH` with the base address from `inc/hw_memmap.h`, the offset `<MODULE>_O_<REG>` and the
+   field masks and shifts `<MODULE>_<REG>_<FIELD>_M`/`_S` from `inc/hw_<module>.h`.
+4. Protected registers: the source wrapped writes to them in `EALLOW`/`EDIS`, and the driverlib functions
+   for the same register do too (read their bodies). Wrap every `HWREG` write to such a register in
+   `EALLOW`/`EDIS`. Without it the write is silently ignored on the device.
+5. When the bit details are not enough, read the register in the TRM as Phase 3, step 3.2 describes.
    Never infer a bit value or field name the TRM does not give.
 
 Enum values, base macros and `INT_` names are in `<driverlib>`.
@@ -92,8 +99,11 @@ Return:
 
 ```
 ### Converted rows
-| Row # | Source access | Target code (line) | How (function / HWREG) |
-|---|---|---|---|
+| Row # | Source access | Target code (line) | How (function / HWREG) | Searched (HWREG rows only) |
+|---|---|---|---|---|
+
+### Functions read
+<every driverlib function the file now calls, each read with get_driverlib_function>
 
 ### Device support calls
 | Call | Replaced by / ported as |

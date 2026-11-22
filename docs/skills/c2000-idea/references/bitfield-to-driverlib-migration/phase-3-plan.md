@@ -23,6 +23,9 @@ functions it calls, in the source project's copy):
 |---|---|---|---|
 ```
 
+The table must have a row for the oscillator source (crystal, external clock or internal oscillator), the
+PLL, SYSCLK and LSPCLK, and a list of every peripheral clock `InitSysCtrl` enables.
+
 Phase 4 sets the SysConfig clock tree to these values.
 
 ## 3.2 Whole-register writes

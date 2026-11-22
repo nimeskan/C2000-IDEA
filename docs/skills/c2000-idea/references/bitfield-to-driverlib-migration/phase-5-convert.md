@@ -11,15 +11,16 @@ order to the log:
 
 ```
 ## Phase 5 — Files
-| # | File | Status | Register rows | Notes |
-|---|---|---|---|---|
+| # | File | Status | Converted by | Register rows | Notes |
+|---|---|---|---|---|---|
 ```
 
-Status is PENDING, DONE or BLOCKED.
+Status is PENDING, DONE or BLOCKED. **Converted by** is the sub-agent's name or id. A file with no
+sub-agent in this column is not DONE, even if it has no register access: the sub-agent decides that.
 
 ## 5.2 Dispatch
 
-For each file in order, start a sub-agent with this briefing:
+For each file in order, call the Agent tool with this briefing as its prompt:
 
 ```
 Convert <target project dir>/<file> from bitfield style to driverlib style. Device: <device>.
@@ -41,6 +42,9 @@ When a sub-agent returns:
 
 1. Every register-table row and every device support call of the file is in its report, as converted.
    A missing row means the file is not done: send the sub-agent back.
+   Every driverlib function the file now calls is in the report's "Functions read" list, and every
+   `HWREG` row has its "Searched" entry. Search the file for `HWREG` and for `_` calls to check. Anything
+   missing goes back to the sub-agent.
 2. Run `get_bitfield_to_driverlib_migration_report` on the file. Only issues on commented-out lines may
    remain. Any other issue goes back to the sub-agent.
 3. Search the file for what must be gone: `Regs.`, `.bit.`, `.all`, `PieVectTable`, device support
@@ -52,4 +56,5 @@ BLOCKED, ask the user and dispatch it again with the answer.
 
 ## Phase 5 complete
 
-When every file is DONE, set Phase 5 to COMPLETE and return to `bitfield-to-driverlib-migration.md`.
+When every file is DONE and has a sub-agent in **Converted by**, set Phase 5 to COMPLETE and return to
+`bitfield-to-driverlib-migration.md`.

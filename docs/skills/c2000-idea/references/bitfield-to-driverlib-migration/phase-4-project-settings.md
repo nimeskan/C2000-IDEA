@@ -8,7 +8,9 @@ fails or returns something you cannot interpret.
 
 Open the target's `.syscfg` (`openFile`). Set the clock tree to the Phase 3 clocks: oscillator, PLL and
 the peripheral clock dividers. Change values only with `changeConfiguration`, using the `choices` from
-`getInstanceConfiguration`. Check every frequency with `traceClockSignal`; each must match Phase 3.
+`getInstanceConfiguration`. Check every frequency with `traceClockSignal`; each must match Phase 3. The
+oscillator source must match too: SysConfig's default can be the internal oscillator where the source
+used the crystal. Write each check in the log under `## Phase 4 — Clocks`.
 
 `getErrorsAndWarnings` must report no error. `save`, then `closeFile`.
 

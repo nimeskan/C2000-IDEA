@@ -1,5 +1,8 @@
 # Phase 6 — Build
 
+Start only if the log shows Phase 5 COMPLETE and every file in the Phase 5 table has a sub-agent in
+**Converted by**. If not, go back to Phase 5.
+
 Build every configuration of the target project until it has no errors.
 
 ## 6.1 Clean build
