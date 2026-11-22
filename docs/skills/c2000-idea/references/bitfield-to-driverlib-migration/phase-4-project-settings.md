@@ -37,6 +37,9 @@ generated `syscfg/device.h`.
 Poll `getToolFlags(project, "compiler")` and `getToolFlags(project, "linker")` until those paths are
 gone. Change nothing else in the project before they are: CCS would overwrite the edit.
 
+If they are still listed after five polls, call `get_projects(rescan: true)` and poll again. If they are
+still listed, stop and tell the user. Never put the paths back to make the build pass.
+
 ## 4.4 Build
 
 Delete the active configuration's `*.obj`, `*.d` and `*.out` files, then `buildProject`. The User files

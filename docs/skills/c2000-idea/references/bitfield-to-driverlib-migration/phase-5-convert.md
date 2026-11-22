@@ -43,7 +43,7 @@ When a sub-agent returns:
 1. Every register-table row and every device support call of the file is in its report, as converted.
    A missing row means the file is not done: send the sub-agent back.
    Every driverlib function the file now calls is in the report's "Functions read" list, and every
-   `HWREG` row has its "Searched" entry. Search the file for `HWREG` and for `_` calls to check. Anything
+   `HWREG` row has its "Searched" entry. Search the file for `HWREG` and list every driverlib call (names like `Module_function`) to check. Anything
    missing goes back to the sub-agent.
 2. Run `get_bitfield_to_driverlib_migration_report` on the file. Only issues on commented-out lines may
    remain. Any other issue goes back to the sub-agent.
