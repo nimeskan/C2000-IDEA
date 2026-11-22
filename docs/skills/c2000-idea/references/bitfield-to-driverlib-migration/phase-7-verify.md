@@ -97,3 +97,5 @@ not, run the missing sub-agents first.
 Show the user the comparison summary (count per class), the timing and pin results and the reviewer's
 findings with their fixes. Record them in the log, set Phase 7 to COMPLETE and return to
 `bitfield-to-driverlib-migration.md`.
+
+The next phase is Phase 8 (`phase-8-report.md`). The migration is not finished until it is COMPLETE.
