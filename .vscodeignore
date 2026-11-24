@@ -19,5 +19,7 @@ submodules/ti_asm_mcp/**
 !submodules/ti_asm_mcp/docs/**
 # Exclude test files from compiled output
 out/src/test/**
+test-env.json
+test-env.local.json
 # Exclude .vsix files
 **/*.vsix

@@ -20,10 +20,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DOWNLOADS="${TMPDIR:-/tmp}/c2000-idea-provision"
 
-# Pinned rather than "latest": test-env.json points at .../ccs2100, which is
-# this exact release. A newer CCS installs beside it under a different name and
-# the tests would still find nothing.
-CCS_VERSION="${CCS_VERSION:-21.0.0.00014}"
+# Pinned rather than "latest" so runs are reproducible. The installer writes into
+# the prefix test-env.json names (.../ccs2100/ccs), whatever the release. The
+# release must bundle SysConfig 1.28.1 or later in ccs/utils, which C2000Ware
+# 26.02 requires: 21.0.0.00014 bundles 1.28.0 and its SysConfig fixtures fail to
+# build; 21.1.0.00012 bundles 1.29.1.
+CCS_VERSION="${CCS_VERSION:-21.1.0.00012}"
 CCS_URL_BASE="https://dr-download.ti.com/software-development/ide-configuration-compiler-or-debugger/MD-J1VdearkvK"
 
 # Only the C2000 device family. The default is every family TI ships and costs
