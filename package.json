@@ -226,14 +226,6 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "c2000-idea.runBitfieldMigrationCheck",
-        "title": "C2000: Run Bitfield Migration Check on File",
-        "icon": {
-          "light": "resources/light/c2000-idea-migrate.png",
-          "dark": "resources/dark/c2000-idea-migrate.png"
-        }
-      },
-      {
         "command": "c2000-idea.enableTiAsmMcp",
         "title": "C2000-IDEA: Enable TI ASM MCP"
       },

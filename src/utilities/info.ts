@@ -17,7 +17,6 @@ export const C2000_IDEA_CMD_OPEN_COLLATERAL = "c2000-idea.openCollateral";
 //
 export const C2000_IDEA_CMD_RUN_MIGRATION_CHECK = "c2000-idea.runMigrationCheck";
 export const C2000_IDEA_CMD_RUN_MIGRATION_CHECK_ON_PROJECT = "c2000-idea.runMigrationCheckOnProject";
-export const C2000_IDEA_CMD_RUN_BITFIELD_MIGRATION_CHECK = "c2000-idea.runBitfieldMigrationCheck";
 export const C2000_IDEA_CMD_SETUP_MIGRATION = "c2000-idea.setupMigration";
 export const C2000_IDEA_CMD_SETUP_PROJECT_CURRENT_DEVICE = "c2000-idea.setupProjectCurrentDevice";
 export const C2000_IDEA_CMD_CLEAR_ALL_MIGRATION_DATA = "c2000-idea.clearAllMigrationData";

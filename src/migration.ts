@@ -636,17 +636,6 @@ export async function getMigrationJSON(context: vscode.ExtensionContext, current
 	return jsonMigration;
 }
 
-export async function getMigrationResolutionJSON(context: vscode.ExtensionContext, currentDevice: string, migrationDevice:  string)
-{
-
-	var jsonMigrationResolutionDataName = currentDevice.toLowerCase() + "_" + migrationDevice.toLocaleLowerCase() + "_register_migration.json";
-	var jsonMigrationResolutionData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extension.extensionUri, "migration_data", "bitfield_data", jsonMigrationResolutionDataName));
-	const jsonMigrationResolutionDataContent = Buffer.from(jsonMigrationResolutionData).toString('utf8');
-	var jsonMigrationResolution: MigrationResolutionData = JSON.parse(jsonMigrationResolutionDataContent);
-
-	return jsonMigrationResolution;
-}
-
 export async function getMigrationDriverlibResolutionJSON(context: vscode.ExtensionContext, currentDevice: string, migrationDevice:  string)
 {
 	var jsonMigrationDriverlibResolutionDataName = "f28x_f29h85x_migration.json"; //To be updated for future releases

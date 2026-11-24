@@ -36,14 +36,6 @@ export const BITFIELD_DEVICE_LIST : string [] = [
 	"F2803x"
 ];
 
-export const BITFIELD_MIGRATION_PAIRS : Record<string, string[]> = {
-	"F2803x" : ["F280013x"],
-};
-
-export const BITFIELD_MIGRATION_RESOLUTIONS : Record<string, string[]> = {
-	"F2803x" : ["F280013x"]
-};
-
 export const NO_REGISTER_LINK_DEVICE_LIST = [
 	"F2803x"
 ];

@@ -18,21 +18,6 @@ interface MigrationData {
     ]
 }
 
-interface MigrationResolutionElement {
-    msg: string,
-    fix: [string],
-    fixMsg: string,
-}
-
-
-interface MigrationResolutionData {
-    reg : [
-        {
-            [id: string]: MigrationResolutionElement
-        }
-    ]
-}
-
 interface MigrationDriverlibResolutionElement {
     code: string,
     type: string,

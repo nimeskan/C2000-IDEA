@@ -111,52 +111,6 @@ export async function selectBitfieldDeviceFamily() {
 }
 
 
-export async function selectBitfieldMigrationFromDeviceFamily() {
-	let options = Object.keys(deviceData.BITFIELD_MIGRATION_PAIRS).map(dev => {
-		return {
-			label: dev,
-			picked: false,
-		};
-	});
-	const confirmed = await vscode.window.showQuickPick(
-		options, 
-		{
-			placeHolder: 'Migrating from the device family (bitfield)',
-			title: "Migrating from the device family (bitfield)"
-		}
-	);
-
-	if (confirmed)
-	{
-		return confirmed.label;
-	}
-	
-	return "";
-}
-
-export async function selectBitfieldMigrationToDeviceFamily(fromDevice : string) {
-	let options = deviceData.BITFIELD_MIGRATION_PAIRS[fromDevice].map(dev => {
-		return {
-			label: dev,
-			picked: false,
-		};
-	});
-	const confirmed = await vscode.window.showQuickPick(
-		options, 
-		{
-			placeHolder: 'Migrating to the device family (bitfield)',
-			title: "Migrating to the device family (bitfield)"
-		}
-	);
-
-	if (confirmed)
-	{
-		return confirmed.label;
-	}
-	
-	return "";
-}
-
 export async function selectMigrationResolutionDeviceFamily() {
 	let options = deviceData.MIGRATION_RESOLUTION_DEVICE_LIST.map(dev => {
 		return {
